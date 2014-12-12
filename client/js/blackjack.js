@@ -323,33 +323,6 @@
             }
         }
     }
-
-    function getSumm(arr) {
-        var aces = [];
-        var value = 0;
-
-        for (var i = arr.length - 1; i >= 0; i--) {
-            var cardValue = arr[i];
-
-            if (cardValue === 'A') {
-                aces.push(cardValue);
-            }
-            else {
-                value += cardValue;
-            }
-        }
-
-        for (var j = aces.length - 1; j >= 0; j--) {
-
-            value += (value + 11 > 21) ? 1 : 11;
-        }
-
-        return value;
-    }
-
-    function clone(obj) {
-        return JSON.parse(JSON.stringify(obj));
-    }
 }());
 
 // function create(objAndDeck, playerSumm, newCard) {
