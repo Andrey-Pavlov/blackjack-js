@@ -1,0 +1,29 @@
+-o fname
+By default the results are sent to standard output. Use this option to divert the results to a tab-delimited plain-text file. Give the output filename in fname.
+
+-d2
+Set the number of decks. The number must follow the d without a space and must be in the range 1 to 8. The default is 1 deck.
+
+-s or -h
+Set the dealer play. The -s options sets the dealer to stand on soft 17; the -h option sets the dealer to hit soft 17. The default is dealer stand on soft 17.
+
+-i4 -f8
+The output table will include expected values for dealer up cards from the initial or -i option to the final or -f option. The card number must follow the i or f without a space and be 1 to 9 or T for ten. The sequence can be increasing or decreasing depending on whether the final value is higher or lower than the initial value. The default settings are initial card 1 (or ace) and final card T.
+
+-l or -r
+Set the doubling down rules. This rule is only needed when calculating Combination (option -C) or Griffin (options -G and -g) tables. The settings are -l for doubling down on any two cards (Las Vegas rules) or -r for doubling down on 10 & 11 only (Reno rules). The default is -l.
+
+-n
+Set the doubling down after splitting rule. This rule is only needed when calculating Combination (option -C) or Griffin (options -G and -g) tables. By default doubling down after splitting is allowed. Use this -n option to prohibit it. When doubling down after splitting is allowed, it will use the current doubling down rule set with the -l or -r commands.
+
+-m
+Set the resplitting rule. This rule is only needed when calculating Combination (option -C) or Griffin (options -G and -g) tables. By default resplitting is not allowed. Use this -m option to allow resplitting.
+
+-c num
+A dealer cache helps the calculations run much faster. The details are described in a paper by the author [2]. The num is the size of the cache and is limited to 0 through 23. A size of 15 is sufficient for most calculations. Exact splitting calculations can benefit from a larger cache. The maximum size of 23 requires 2.23 G or memory for the cache; if you have less memory an error will result and you will need to reduce the cache size.
+
+-v
+When used, the calculations will provide verbose feedback to standard output. This output will only appear with the -o option is used to divert calculations to a file.
+
+-?
+Print a list of all command options with brief descriptions.

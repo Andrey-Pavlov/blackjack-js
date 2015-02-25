@@ -148,7 +148,7 @@ function randomFromValues() {
 
         return arguments[number];
     }
-    else if (arguments.length == 1) {
+    else if (arguments.length === 1) {
         var arrayOrObject = arguments[0];
         if (Array.isArray(arrayOrObject)) {
             return arrayOrObject[randomIntFromInterval(0, arrayOrObject.length - 1)];
