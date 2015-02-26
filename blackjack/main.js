@@ -35,8 +35,8 @@ var hitsSoft17 = false,
     maxRecursiveSplitHands = 2;
 
 (function main() {
-    var numopt, num;
-    var handParm;
+    var numopt, num,
+        handParm;
 
     //options
     // output file name
@@ -82,7 +82,7 @@ var hitsSoft17 = false,
 
     if (options.decksNumber) {
         numopt = parseInt(options.decksNumber, 10);
-        num = (numopt === 'T' || numopt === 't') ? constants.TEN : (parseInt(numopt, 10) - 0);
+        num = (numopt === 'T' || numopt === 't') ? constants.TEN : (parseInt(numopt, 10));
         if (num < constants.ACE || num > constants.TEN || num > 8) {
             stderr.write("Invalid dealer up card (1-9 or T) or number of decks (1-8) setting\n");
             return enums.error.BadOptionErr;
@@ -92,12 +92,7 @@ var hitsSoft17 = false,
     }
 
     //rules
-    if (rules.dealerStandOn17 === 'true') {
-        hitsSoft17 = false;
-    }
-    else {
-        hitsSoft17 = true;
-    }
+    hitsSoft17 = rules.dealerStandOn17 !== 'true';
 
     if (rules.ddAnyNot10Or11 === 'true') {
         ddFlag = enums.DD.any;
@@ -148,7 +143,7 @@ var hitsSoft17 = false,
             case 'E':
                 exactSplitCalcs = true;
 
-                var handParm = parseInt(param, 10);
+                handParm = parseInt(param, 10);
                 if (handParm < 2 || handParm > 9) {
                     stderr.write("Maximum number of exact split hands must be 2 to 9\n");
                     return enums.error.BadOptionErr;
@@ -159,7 +154,7 @@ var hitsSoft17 = false,
             case 'R':
                 exactRecursiveSplitCalcs = true;
 
-                var handParm = parseInt(param, 10);
+                handParm = parseInt(param, 10);
                 if (handParm < 2 || handParm > 9) {
                     stderr.write("Maximum number of exact split hands must be 2 to 9\n");
                     return enums.error.BadOptionErr;
@@ -414,8 +409,8 @@ function produceTable(os, dealer) {
                 // calculations ResplitNONE+ResplitALLOWED,DDNone+DDAny+DD10OR11
                 results = new Array(6);
                 hand.splitCalcs(theDeck, dealer, enums.resplit.none + enums.resplit.allowed, enums.DD.none + enums.DD.any + enums.DD.l0OR11, results);
-                for (var i = 0; i < 6; i++) {
-                    os.write("\t" + results[i]);
+                for (var i1 = 0; i1 < 6; i1++) {
+                    os.write("\t" + results[i1]);
                 }
 
                 theDeck.restore(c1, c1);
@@ -440,8 +435,8 @@ function produceTable(os, dealer) {
                 // calculations
                 results = new Array(3);
                 hand.exactSplitCalcs(theDeck, dealer, maxRecursiveSplitHands, enums.DD.none + enums.DD.any + enums.DD.l0OR11, results);
-                for (var i = 0; i < 3; i++) {
-                    os.write("\t" + results[i]);
+                for (var i2 = 0; i2 < 3; i2++) {
+                    os.write("\t" + results[i2]);
                 }
 
                 theDeck.restore(c1, c1);
@@ -472,8 +467,8 @@ function produceTable(os, dealer) {
                 // calculations
                 results = new Array(3);
                 hand.handExactSplitCalcs(theDeck, dealer, maxSplitHands, enums.DD.none + enums.DD.any + enums.DD.l0OR11, results);
-                for (var i = 0; i < 3; i++) {
-                    os.write("\t" + results[i]);
+                for (var i3 = 0; i3 < 3; i3++) {
+                    os.write("\t" + results[i3]);
                 }
 
                 theDeck.restore(c1, c1);
@@ -499,7 +494,7 @@ function produceTable(os, dealer) {
 				d = # of decks
 				E(c_i) is effect on mean on removing card c_i in the table normalized to 1 deck
 		*/
-        if (residCalcs != enums.griffin.noGriffin) {
+        if (residCalcs !== enums.griffin.noGriffin) {
             var hit = null,
                 alt = null;
 

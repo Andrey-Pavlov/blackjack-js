@@ -3,6 +3,6 @@
     "decksNumber": "1",
     "initialDealerCard": "1",
     "finalDealerCard": "T",
-    "dealerCache": "10",
+    "dealerCache": "12",
     "verbose": "true"
 }

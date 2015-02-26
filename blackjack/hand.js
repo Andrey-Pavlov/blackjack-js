@@ -122,8 +122,6 @@ function Hand() {
             }
             else
             {
-                var x2 = _this.standExval(deck, dealer);
-                
                 exval += wt.weight * _this.standExval(deck, dealer);
             }
 
@@ -197,13 +195,13 @@ function Hand() {
             // do DD not allowed
             if (ddFlags & enums.DD.none) {
                 dealer.setDDAfterSplit(enums.DD.none);
-                results[base + 0] = _this.approxSplitPlay(deck, dealer, resplit);
+                results[base] = _this.approxSplitPlay(deck, dealer, resplit);
             }
 
             // do DD any allowed
             if (ddFlags & enums.DD.any) {
                 if (ddFlags & enums.DD.none && (firstCard === constants.TEN || firstCard === constants.ACE))
-                    results[base + 1] = results[base + 0];
+                    results[base + 1] = results[base];
                 else {
                     dealer.setDDAfterSplit(enums.DD.any);
                     results[base + 1] = _this.approxSplitPlay(deck, dealer, resplit);
@@ -461,7 +459,7 @@ function Hand() {
                 dealer.setDDAfterSplit(enums.DD.any);
                 _this.collectHands(deck, dealer, playHands); // find list of possible hands
                 results[1] = _this.handExactSplitExval(deck, dealer, hands, numSplitHands, maxSplitHands, playHands);
-               playHands = null;
+                playHands = null;
             }
         }
 
@@ -541,7 +539,7 @@ function Hand() {
             }
 
             // remove all cards from hand (except the first) and restore to the deck
-            handList[i].removeHand(this, deck);
+            handList[i].removeHand(_this, deck);
         }
 
         return exval;
@@ -649,44 +647,31 @@ function Hand() {
                     if (ndecks === 1 && !dealer.getHitsSoft17() && total === 8)
                         return false;
                 case 9:
+                    return total < 9;
                 case constants.TEN:
-                    if (total >= 9) return false;
-                    return true;
-
+                    return total < 9;
                 default:
-                    if (total >= 8) return false;
-                    return true;
+                    return total < 8;
             }
         }
         else { // default hard hitting
             switch (upcard) {
                 case 2:
                 case 3:
-                    if (total >= 13) {
-                        return false;
-                    }
-
-                    return true;
+                    return total < 13;
                 case 4:
                 case 5:
                 case 6:
-                    if (total >= 12) {
-                        return false;
-                    }
-
-                    return true;
-
+                    return total < 12;
                 case constants.TEN:
                     // stand 3 or more card 16s with one deck
                     if (total === 16 && ndecks === 1 && cards >= 3) {
                         return false;
                     }
                 default:
-                    if (total >= 17) {
-                        return false;
-                    }
+                    return total < 17;
 
-                    return true;
+
             }
         }
     };
@@ -819,28 +804,22 @@ function Hand() {
             // basic strategy
             switch (upcard) {
                 case 2:
-                    if (total === 7) return true;
-                    return false;
+                    return total === 7;
+
 
                 case 3:
-                    if (total === 7 || total === 8) 
+                    if (total === 7 || total === 8)
                     {
                         return true;
                     }
-                    
+
                     return false;
 
                 case 4:
-                    if (total >= 9 || total === 2) 
-                    {
-                        return false;
-                    }
-                    
-                    return true;
+                    return !(total >= 9 || total === 2);
 
                 case 5:
-                    if (total >= 9) return false;
-                    return true;
+                    return total < 9;
 
                 case 6:
                     if (total >= 10) return false;

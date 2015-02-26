@@ -94,7 +94,7 @@ function PlayHand(cds, firstCard, betsize) {
 
                 return false;
             }
-            totalwt *= cardwt;
+            totalwt *= cardwt.weight;
         }
 
         // acceptable hand
@@ -111,7 +111,9 @@ function PlayHand(cds, firstCard, betsize) {
         }
 
         // get weights for each card
-        var cardwt,
+        var cardwt = {
+                weight: 0
+            },
             totalwt = 1;
 
         for (var i = 1; i <= cards[0]; i++) {
@@ -123,11 +125,12 @@ function PlayHand(cds, firstCard, betsize) {
 
                 return false;
             }
-            totalwt *= cardwt;
+            totalwt *= cardwt.weight;
         }
 
         // acceptable hand
         wt.weight = totalwt * (repeat - splits);
+
         return true;
     };
 

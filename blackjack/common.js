@@ -22,7 +22,7 @@ common.constants = {
     // The 4 is when hitting soft 18 vs Ace and make the hand a hard 12
     // Since first card is not counted when enumerating hands, the max is 1 less or 13
     MAX_HAND_SIZE: 13,
-}
+};
 
 common.enums = {
     error: {
