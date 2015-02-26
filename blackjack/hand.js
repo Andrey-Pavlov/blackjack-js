@@ -425,7 +425,7 @@ function Hand() {
     };
 
     _this.handExactSplitCalcs = function(deck, dealer, maxSplitHands, ddFlags, results) {
-        var playHands = [];
+        var playHands = null;
 
         var hands = new Array(maxSplitHands);
 
@@ -445,26 +445,29 @@ function Hand() {
 
         // do DD not allowed
         if (ddFlags & enums.DD.none) {
+            playHands = [];
             dealer.setDDAfterSplit(enums.DD.none);
             _this.collectHands(deck, dealer, playHands); // find list of possible hands
             results[0] = _this.handExactSplitExval(deck, dealer, hands, numSplitHands, maxSplitHands, playHands);
-            _this.clearHands(playHands);
+            playHands = null;
         }
 
         // do DD any allowed
         if (ddFlags & enums.DD.any) {
-            if (ddFlags & enums.DD.none && (firstCard === constants.TEN || firstCard === constants.ACE))
+            playHands = [];
+            if ((ddFlags & enums.DD.none) && (firstCard === constants.TEN || firstCard === constants.ACE))
                 results[1] = results[0];
             else {
                 dealer.setDDAfterSplit(enums.DD.any);
                 _this.collectHands(deck, dealer, playHands); // find list of possible hands
                 results[1] = _this.handExactSplitExval(deck, dealer, hands, numSplitHands, maxSplitHands, playHands);
-                _this.clearHands(playHands);
+               playHands = null;
             }
         }
 
         // do DD 10 or 11 only allowed
         if (ddFlags & enums.DD.l0OR11) {
+            playHands = [];
             if (ddFlags & enums.DD.none && (firstCard === constants.TEN || firstCard === constants.ACE)) {
                 results[2] = results[0];
             }
@@ -475,7 +478,7 @@ function Hand() {
                 dealer.setDDAfterSplit(enums.DD.l0OR11);
                 _this.collectHands(deck, dealer, playHands); // find list of possible hands
                 results[2] = _this.handExactSplitExval(deck, dealer, hands, numSplitHands, maxSplitHands, playHands);
-                _this.clearHands(playHands);
+                playHands = null;
             }
         }
 
@@ -509,16 +512,16 @@ function Hand() {
                     continue;
                 }
 
-                handList[i].fillNonsplitHand(this);
+                handList[i].fillNonsplitHand(_this);
             }
             else {
                 if (!handList[i].removeAndGetWeight(deck, dealer, wt)) {
                     continue;
                 }
-                handList[i].fillHand(this);
+                handList[i].fillHand(_this);
             }
 
-            if (this === hands[numSplitHands - 1]) { // if just finished last hand then add up expected values for all hands
+            if (_this === hands[numSplitHands - 1]) { // if just finished last hand then add up expected values for all hands
                 probs = new common.DealerProbs();
                 dealer.getPlayerExVals(deck, probs);
                 var totalVal = 0.;
@@ -555,12 +558,12 @@ function Hand() {
     };
 
     // clear objects in a handset
-    _this.clearHands = function(handList) {
-        for (var j = 0; j < handList.length; j++) {
-            handList[j] = null;
-        }
-        //handList.clear();
-    };
+    // _this.clearHands = function(handList) {
+    //     for (var j = 0; j < handList.length; j++) {
+    //         handList[j] = null;
+    //     }
+    //     //handList.clear();
+    // };
 
     // calculate the expected value to hit this hand and then finish using
     _this.enumerateHands = function(deck, dealer, cds, handList) {
