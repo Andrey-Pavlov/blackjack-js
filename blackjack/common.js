@@ -21,7 +21,7 @@ common.constants = {
     // inf deck: 1,1,1,1,1,1,1,1,4,1,1,1,1,any
     // The 4 is when hitting soft 18 vs Ace and make the hand a hard 12
     // Since first card is not counted when enumerating hands, the max is 1 less or 13
-    MAX_HAND_SIZE: 13,
+    MAX_HAND_SIZE: 13
 };
 
 common.enums = {
@@ -68,12 +68,6 @@ common.enums = {
         ExVal20: 4,
         ExVal21: 5
     }
-};
-
-common.utils = {};
-
-common.utils.clone = function(obj) {
-    return JSON.parse(JSON.stringify(obj));
 };
 
 module.exports = common;

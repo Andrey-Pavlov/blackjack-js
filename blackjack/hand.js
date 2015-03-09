@@ -15,7 +15,7 @@ function Hand() {
         order,
         _this = this;
 
-    _this.reset = function(card1, card2, deck) {
+    _this.reset = function (card1, card2, deck) {
         if (card2 instanceof Object) {
             deck = card2;
             card2 = null;
@@ -60,7 +60,7 @@ function Hand() {
         }
     };
 
-    _this.hit = function(card) {
+    _this.hit = function (card) {
         total += card;
 
         if (card === 1) {
@@ -70,7 +70,7 @@ function Hand() {
         cards++;
     };
 
-    _this.unhit = function(card, deck) {
+    _this.unhit = function (card, deck) {
         total -= card;
 
         if (card === 1) {
@@ -86,7 +86,7 @@ function Hand() {
 
     //Expected values
 
-    _this.standExval = function(deck, dealer) {
+    _this.standExval = function (deck, dealer) {
         // loss if busted
         var index = _this.getPlayerIndex();
 
@@ -100,7 +100,7 @@ function Hand() {
         return probs.p[index];
     };
 
-    _this.hitExval = function(deck, dealer) {
+    _this.hitExval = function (deck, dealer) {
         var exval = 0,
             wt = {
                 weight: 0
@@ -116,12 +116,11 @@ function Hand() {
 
             // hit again or add to probabilities
             if (_this.basicHit(deck, dealer)) {
-                
+
                 exval += wt.weight * _this.hitExval(deck, dealer);
-                
+
             }
-            else
-            {
+            else {
                 exval += wt.weight * _this.standExval(deck, dealer);
             }
 
@@ -132,7 +131,7 @@ function Hand() {
         return exval;
     };
 
-    _this.doubleExval = function(deck, dealer) {
+    _this.doubleExval = function (deck, dealer) {
         var exval = 0,
             wt = {
                 weight: 0
@@ -157,7 +156,7 @@ function Hand() {
         return 2 * exval;
     };
 
-    _this.splitStandExval = function(deck, dealer, kout) {
+    _this.splitStandExval = function (deck, dealer, kout) {
         // loss if busted
         var index = _this.getPlayerIndex();
 
@@ -178,7 +177,7 @@ function Hand() {
     };
 
     //Splitting
-    _this.splitCalcs = function(deck, dealer, replitFlags, ddFlags, results) {
+    _this.splitCalcs = function (deck, dealer, replitFlags, ddFlags, results) {
         var i;
 
         for (i = 0; i < 6; i++) results[i] = 0;
@@ -220,7 +219,7 @@ function Hand() {
         }
     };
 
-    _this.approxSplitPlay = function(deck, dealer, resplit) {
+    _this.approxSplitPlay = function (deck, dealer, resplit) {
         var explay;
         if (resplit) {
             // expected value with two split cards removed and conditioned
@@ -263,7 +262,7 @@ function Hand() {
         return explay;
     };
 
-    _this.approxSplitExval = function(deck, dealer, resplit, kout) {
+    _this.approxSplitExval = function (deck, dealer, resplit, kout) {
         var exval = 0,
             wt = {
                 weight: 0
@@ -306,7 +305,7 @@ function Hand() {
         return exval;
     };
 
-    _this.exactSplitCalcs = function(deck, dealer, maxSplitHands, ddFlags, results) {
+    _this.exactSplitCalcs = function (deck, dealer, maxSplitHands, ddFlags, results) {
         var hands = new Array(maxSplitHands);
         var i;
 
@@ -357,7 +356,7 @@ function Hand() {
         hands[1] = null;
     };
 
-    _this.exactSplitExval = function(deck, dealer, hands, numSplitHands, maxSplitHands) {
+    _this.exactSplitExval = function (deck, dealer, hands, numSplitHands, maxSplitHands) {
         var exval = 0,
             wt = {
                 weight: 0
@@ -422,7 +421,7 @@ function Hand() {
         return exval;
     };
 
-    _this.handExactSplitCalcs = function(deck, dealer, maxSplitHands, ddFlags, results) {
+    _this.handExactSplitCalcs = function (deck, dealer, maxSplitHands, ddFlags, results) {
         var playHands = null;
 
         var hands = new Array(maxSplitHands);
@@ -484,9 +483,9 @@ function Hand() {
         hands[1] = null;
     };
 
-    _this.handExactSplitExval = function(deck, dealer, hands, numSplitHands, maxSplitHands, handList) {
+    _this.handExactSplitExval = function (deck, dealer, hands, numSplitHands, maxSplitHands, handList) {
         var exval = 0,
-        probs,
+            probs,
             wt = {
                 weight: 0
             };
@@ -548,7 +547,7 @@ function Hand() {
     //#region Collect Possible Hands
 
     // collect all possible hands for current split situation
-    _this.collectHands = function(deck, dealer, handList) {
+    _this.collectHands = function (deck, dealer, handList) {
         var cds = new Array(20);
         deck.clearHandHashTable(dealer);
         cds[0] = 0;
@@ -564,7 +563,7 @@ function Hand() {
     // };
 
     // calculate the expected value to hit this hand and then finish using
-    _this.enumerateHands = function(deck, dealer, cds, handList) {
+    _this.enumerateHands = function (deck, dealer, cds, handList) {
         for (var i = constants.TEN; i >= constants.ACE; i--) {
             // get weight and adjust if resplitting
             if (!deck.remove(i)) {
@@ -599,7 +598,7 @@ function Hand() {
 
     //#region Basic strategy
 
-    _this.basicSplitHit = function(deck, dealer) {
+    _this.basicSplitHit = function (deck, dealer) {
         if (cards === 1) {
             doubled = 1.;
             return true;
@@ -637,7 +636,7 @@ function Hand() {
         return _this.basicHit(deck, dealer);
     };
 
-    _this.basicHit = function(deck, dealer) {
+    _this.basicHit = function (deck, dealer) {
         var ndecks = deck.getDecks();
         var upcard = dealer.getUpcard();
 
@@ -670,13 +669,11 @@ function Hand() {
                     }
                 default:
                     return total < 17;
-
-
             }
         }
     };
 
-    _this.twoCardException = function(deck, dealer, exception) {
+    _this.twoCardException = function (deck, dealer, exception) {
         // only meant for 2 card hands
         if (cards != 2) {
             exception.isThrown = false;
@@ -700,9 +697,16 @@ function Hand() {
                         }
                     }
                     else if (upcard === 3) {
-                        if (_this.handIs(8, 4)) return false;
-                        if (_this.handIs(7, 5)) return false;
-                        if (_this.handIs(6, 6)) return false; // not in Griffin because it is split instead
+                        if (_this.handIs(8, 4))
+                        {
+                            return false;
+                        }
+                        if (_this.handIs(7, 5)) {
+                            return false;
+                        }
+                        if (_this.handIs(6, 6)) {
+                            return false;           // not in Griffin because it is split instead
+                        }
                     }
                     else if (upcard === 4) {
                         if (_this.handIs(constants.TEN, 2)) {
@@ -727,9 +731,11 @@ function Hand() {
                             return false;
 
                         }
+
                         if (_this.handIs(7, 5)) {
                             return false;
                         }
+
                         if (_this.handIs(6, 6)) {
                             return false;
                         }
@@ -757,7 +763,7 @@ function Hand() {
         return false;
     };
 
-    _this.basicDD = function(deck, dealer) {
+    _this.basicDD = function (deck, dealer) {
         var ddOption = dealer.getDDAfterSplit();
 
         if (ddOption === enums.DD.none) {
@@ -776,28 +782,50 @@ function Hand() {
             // exceptions
             if (ndecks === 2) {
                 if (upcard === 2) {
-                    if (total === 7) return false;
-                    if (total === 8 && hits17) return true;
+                    if (total === 7) {
+                        return false;
+                    }
+                    if (total === 8 && hits17) {
+                        return true;
+                    }
                 }
                 else if (upcard === 4) {
-                    if (total === 3) return false;
-                    if (total === 4 && !hits17) return false;
+                    if (total === 3) {
+                        return false;
+                    }
+                    if (total === 4 && !hits17) {
+                        return false;
+                    }
                 }
                 else if (upcard === 6) {
-                    if (total === 9 && !hits17) return false;
+                    if (total === 9 && !hits17) {
+                        return false;
+                    }
                 }
             }
             else if (ndecks > 2) {
                 if (upcard === 2) {
-                    if (total === 7) return false;
-                    if (total === 8 && hits17) return true;
+                    if (total === 7) {
+                        return false;
+                    }
+
+                    if (total === 8 && hits17) {
+                        return true;
+                    }
                 }
                 else if (upcard === 4) {
-                    if (total === 3) return false;
-                    if (total === 4) return false;
+                    if (total === 3) {
+                        return false;
+                    }
+                    if (total === 4) {
+                        return false;
+                    }
                 }
                 else if (upcard === 6) {
-                    if (total === 9 && !hits17) return false;
+                    if (total === 9 && !hits17)
+                    {
+                        return false;
+                    }
                 }
             }
 
@@ -805,15 +833,13 @@ function Hand() {
             switch (upcard) {
                 case 2:
                     return total === 7;
-
-
                 case 3:
-                    if (total === 7 || total === 8)
-                    {
+                    if (total === 7 || total === 8) {
                         return true;
                     }
-
-                    return false;
+                    else {
+                        return false;
+                    }
 
                 case 4:
                     return !(total >= 9 || total === 2);
@@ -822,22 +848,37 @@ function Hand() {
                     return total < 9;
 
                 case 6:
-                    if (total >= 10) return false;
-                    return true;
+                    if (total >= 10)
+                    {
+                        return false;
+                    }
+                    else {
+                        return true;
+                    }
 
                 default:
                     return false;
             }
         }
         else {
-            if (total > 11) return false;
-            if (total < 10 && ddOption === enums.DD.l0OR11) return false;
+            if (total > 11)
+            {
+                return false;
+            }
+
+            if (total < 10 && ddOption === enums.DD.l0OR11)
+            {
+                return false;
+            }
 
             // exceptions
             if (ndecks === 1) { // Agrees with Griffin, Theory of Blackjack, page 20 (but only for !hits17)
                 // No exception on 5 when hits17 is new here and it is very close (.13002 DD vs .129947 Hit)
-                if (_this.handIs(6, 2))
-                    if (upcard === 6 || (upcard === 5 && !hits17)) return false;
+                if (_this.handIs(6, 2)) {
+                    if (upcard === 6 || (upcard === 5 && !hits17)) {
+                        return false;
+                    }
+                }
             }
             else if (ndecks === 2) {
                 if (total === 8 && (upcard === 5 || upcard === 6)) {
@@ -879,10 +920,7 @@ function Hand() {
 
                 case 5:
                 case 6:
-                    if (total < 8) {
-                        return false;
-                    }
-                    return true;
+                    return total >= 8;
 
                 case 7:
                 case 8:
@@ -890,21 +928,23 @@ function Hand() {
                     if (total < 10) {
                         return false;
                     }
+                    else {
+                        return true;
+                    }
 
-                    return true;
-
-                    // T and A
+                // T and A
                 default:
                     if (total < 11) {
                         return false;
                     }
-
-                    return true;
+                    else {
+                        return true;
+                    }
             }
         }
     };
 
-    _this.twoCardHit = function(deck, dealer) {
+    _this.twoCardHit = function (deck, dealer) {
         var exception = {
             isThrown: null
         };
@@ -921,42 +961,42 @@ function Hand() {
     //#region Accessors
 
     // total for hand, accounting for if it is soft
-    _this.getTotal = function() {
+    _this.getTotal = function () {
         return _this.isSoft() ? total + 10 : total;
     };
 
     // index into dealerplayer expected values arrays array (>ExVal21 means busted)
-    _this.getPlayerIndex = function() {
+    _this.getPlayerIndex = function () {
         var sum = _this.getTotal();
 
         return sum < 16 ? enums.ExVal.ExVal16 : sum - 16;
     };
 
     // is it a soft hand
-    _this.isSoft = function() {
+    _this.isSoft = function () {
         return (total < 12 && aces > 0);
     };
 
     // check if hand is soft 17 (for dealer use)
-    _this.isSoft17 = function() {
+    _this.isSoft17 = function () {
         return total === 7 && aces > 0;
     };
 
     // has split hand been doubled
-    _this.getDoubled = function() {
+    _this.getDoubled = function () {
         return doubled;
     };
 
-    _this.setDoubled = function(bet) {
+    _this.setDoubled = function (bet) {
         doubled = bet;
     };
 
-    _this.getBetPerHand = function() {
+    _this.getBetPerHand = function () {
         return doubled;
     };
 
     // return card required to make this hand a natural (or zero if none)
-    _this.getNaturalCard = function() {
+    _this.getNaturalCard = function () {
         if (cards > 1) {
             return 0;
         }
@@ -968,27 +1008,27 @@ function Hand() {
     };
 
     // check if 2-card 21 or natural
-    _this.isNatural = function() {
+    _this.isNatural = function () {
         return _this.getTotal() === 21 && cards === 2;
     };
 
     // return first card
-    _this.getFirstCard = function() {
+    _this.getFirstCard = function () {
         return firstCard;
     };
 
     // check two card hand (only valid for 2-card hands)
-    _this.handIs = function(c1, c2) {
+    _this.handIs = function (c1, c2) {
         return total === c1 + c2 && (firstCard === c1 || firstCard === c2);
     };
 
     // set order of hands in exact splitting
-    _this.setOrder = function(num) {
+    _this.setOrder = function (num) {
         order = num;
     };
 
     // display hand info
-    _this.display = function() {
+    _this.display = function () {
         stdout.write("(");
         if (cards === 1) {
             stdout.write(_this.cardChar(firstCard));
@@ -1016,7 +1056,7 @@ function Hand() {
     };
 
     // display card character
-    _this.cardChar = function(num) {
+    _this.cardChar = function (num) {
         if (num === 1) {
             return 'A';
         }
