@@ -5,6 +5,11 @@
   "main": "server.js",
   "repository": "",
   "dependencies": {
-    "express": "*"
+    "async": "0.9.0",
+    "bson": "0.2.19",
+    "express": "3.20.1",
+    "mongodb": "1.4.34",
+    "mongoose": "3.8.24",
+    "requirejs": "2.1.16"
   }
 }
