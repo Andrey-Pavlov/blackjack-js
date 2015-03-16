@@ -1,4 +1,4 @@
-var mongoose = require('mongoose'),
+var mongoose = require('mongoose'), 
     options = require('../blackjackOptions.json');
 
 // intialize
