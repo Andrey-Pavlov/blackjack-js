@@ -1,8 +1,8 @@
 {
     "filename": "blackjack.txt",
-    "decksNumber": "1",
     "initialDealerCard": "1",
-    "finalDealerCard": "T",
-    "dealerCache": "12",
-    "verbose": "true"
+    "finalDealerCard": "10",
+    "dealerCache": "16",
+    "verbose": "true",
+    "db": "mongodb://localhost:27017/blackjack"
 }

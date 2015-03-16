@@ -1,0 +1,70 @@
+
+Dealer Up Card 1
+Number of Decks: 1
+Dealer stands soft 17
+Results conditioned on dealer not having blackjack
+
+OPTIMAL STRATEGY: (H)it, (S)tand, (D)ouble, or S(P)lit (DD any two cards, no DD after split, no resplitting)
+hand	1	2	3	4	5	6	7	8	9	10
+1	P
+2	H	H
+3	H	H	H
+4	H	H	H	H
+5	H	H	H	H	H
+6	H	H	H	H	D	H
+7	S	H	H	D	H	H	H
+8	S	H	D	H	H	H	H	P
+9	S	D	H	H	H	H	H	S	S
+10	S	H	H	H	H	H	S	S	S	S
+
+Dealer Up Card 2
+Number of Decks: 1
+Dealer stands soft 17
+
+OPTIMAL STRATEGY: (H)it, (S)tand, (D)ouble, or S(P)lit (DD any two cards, no DD after split, no resplitting)
+hand	1	2	3	4	5	6	7	8	9	10
+1	P
+2	H	H
+3	H	H	H
+4	H	H	H	H
+5	H	H	H	D	D
+6	D	H	D	D	D	P
+7	S	D	D	D	H	S	P
+8	S	D	D	H	S	S	S	P
+9	S	D	H	S	S	S	S	S	P
+10	S	H	H	S	S	S	S	S	S	S
+
+Dealer Up Card 1
+Number of Decks: 1
+Dealer stands soft 17
+Results conditioned on dealer not having blackjack
+
+OPTIMAL STRATEGY: (H)it, (S)tand, (D)ouble, or S(P)lit (DD any two cards, no DD after split, no resplitting)
+hand	1	2	3	4	5	6	7	8	9	10
+1	P
+2	H	H
+3	H	H	H
+4	H	H	H	H
+5	H	H	H	H	H
+6	H	H	H	H	D	H
+7	S	H	H	D	H	H	H
+8	S	H	D	H	H	H	H	P
+9	S	D	H	H	H	H	H	S	S
+10	S	H	H	H	H	H	S	S	S	S
+
+Dealer Up Card 2
+Number of Decks: 1
+Dealer stands soft 17
+
+OPTIMAL STRATEGY: (H)it, (S)tand, (D)ouble, or S(P)lit (DD any two cards, no DD after split, no resplitting)
+hand	1	2	3	4	5	6	7	8	9	10
+1	P
+2	H	H
+3	H	H	H
+4	H	H	H	H
+5	H	H	H	D	D
+6	D	H	D	D	D	P
+7	S	D	D	D	H	S	P
+8	S	D	D	H	S	S	S	P
+9	S	D	H	S	S	S	S	S	P
+10	S	H	H	S	S	S	S	S	S	S

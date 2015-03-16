@@ -10,7 +10,9 @@ var stdout = process.stdout,
     Hand = require('./hand.js'),
     fs = require('fs'),
     rules = require('./blackjackRules.json'),
-    options = require('./blackjackOptions.json');
+    options = require('./blackjackOptions.json'),
+    mongoose = require('./Mongoose/mongoose.js'),
+    async = require('async');
 
 // global defaults
 var hitsSoft17 = false,
@@ -80,8 +82,8 @@ var hitsSoft17 = false,
         upend = num;
     }
 
-    if (options.decksNumber) {
-        numopt = parseInt(options.decksNumber, 10);
+    if (rules.decksNumber) {
+        numopt = parseInt(rules.decksNumber, 10);
         num = (numopt === 'T' || numopt === 't') ? constants.TEN : (parseInt(numopt, 10));
         if (num < constants.ACE || num > constants.TEN || num > 8) {
             stderr.write("Invalid dealer up card (1-9 or T) or number of decks (1-8) setting\n");
@@ -169,8 +171,7 @@ var hitsSoft17 = false,
     }
 
     // need something
-    if (!standCalcs && !hitCalcs && !doubleCalcs && !approxSplitCalcs && !exactSplitCalcs &&
-        !exactRecursiveSplitCalcs && !comboCalcs && residCalcs === enums.griffin.noGriffin) {
+    if (!standCalcs && !hitCalcs && !doubleCalcs && !approxSplitCalcs && !exactSplitCalcs && !exactRecursiveSplitCalcs && !comboCalcs && residCalcs === enums.griffin.noGriffin) {
 
         stderr.write("No calculation options were selected\n");
 
@@ -180,7 +181,7 @@ var hitsSoft17 = false,
     // output file
     var os = fs.createWriteStream(outfile);
     if (outfile != null) {
-        os.on('error', function(err) {
+        os.on('error', function (err) {
             stderr.write("Output file '" + outfile + "' could not be created\n");
             stderr.write(err);
             return enums.error.FileAccessErr;
@@ -199,12 +200,235 @@ var hitsSoft17 = false,
 
     // get the table
     var startTicks = Date.now();
-    produceTable(os, theDealer);
-    var clockTime = (Date.now() - startTicks) / 1000;
-    stdout.write("Calculation time " + clockTime + " secs\n");
+    var clockTime = null;
+    if(comboCalcs){
+
+        async.series([
+                function open(callback){
+                    mongoose.connection.on('open', callback);
+                },
+                function requireModels(callback){
+                    require('./Mongoose/Models/bjAction.js');
+
+                    async.each(Object.keys(mongoose.models), function(modelName, callback){
+                        mongoose.models[modelName].ensureIndexes(callback);
+                    }, callback);
+                },
+                function saveBjActions(callback) {
+                    var dealerStandOn17 = null,
+                        ddAnyNot10Or11 = null,
+                        ddAfterSplitRestricted = null,
+                        resplitAllowed = null;
+
+                    var optionsArr = [];
+
+                    for (var i = 0; i <= 1; i++) {
+                        dealerStandOn17 = i === 0 ? false : true;
+
+                        for (var j = 0; j <= 1; j++) {
+                            ddAnyNot10Or11 = j === 0 ? false : true;
+
+                            for (var k = 0; k <= 1; k++) {
+                                ddAfterSplitRestricted = k === 0 ? false : true;
+
+                                for (var l = 0; l <= 1; l++) {
+                                    resplitAllowed = l === 0 ? false : true;
+
+                                    var genOptions = {
+                                        decksNumber: rules.decksNumber,
+                                        dealerStandOn17: dealerStandOn17,
+                                        ddAnyNot10Or11: ddAnyNot10Or11,
+                                        ddAfterSplitRestricted: ddAfterSplitRestricted,
+                                        resplitAllowed: resplitAllowed
+                                    };
+
+                                    optionsArr.push(genOptions);
+                                }
+                            }
+                        }
+                    }
+
+                    async.eachSeries(optionsArr, function (options, callback1) {
+                        if (verbose) {
+                            stdout.write("dealerStandOn17:" + options.dealerStandOn17);
+                            stdout.write(" ddAnyNot10Or11:" + options.ddAnyNot10Or11);
+                            stdout.write(" ddAfterSplitRestricted:" + options.ddAfterSplitRestricted);
+                            stdout.write(" resplitAllowed:" + options.resplitAllowed + '\n');
+                        }
+
+                        var bjActions = produceTableComboCalcs(os, theDealer, options);
+
+                        async.each(bjActions, function (bjActionObj, callback2) {
+                            var bjAction = new mongoose.models.BjAction(bjActionObj);
+                            bjAction.save(callback2);
+                        }, callback1);
+
+                    }, callback);
+                }
+            ],
+            function(err, results){
+                clockTime = (Date.now() - startTicks) / 1000;
+                stdout.write("Calculation time " + clockTime + " secs\n");
+
+                console.log(err);
+                mongoose.disconnect();
+                process.exit(err ? 1 : 666);
+            });
+    }
+    else {
+        produceTable(os, theDealer);
+        clockTime = (Date.now() - startTicks) / 1000;
+        stdout.write("Calculation time " + clockTime + " secs\n");
+    }
+
 
     return enums.error.noErr;
 })();
+
+
+
+function produceTableComboCalcs(os, dealer, rules) {
+    var c1,
+        c2,
+        upcard,
+        hand = new Hand(),
+        results = null,
+        mean = null,
+        exval = null
+
+    var bjActions = [];
+
+    var theDeck = new Deck(ndecks);
+
+    var step = (upstart <= upend) ? 1 : -1;
+    for (upcard = upstart; upcard != upend + step; upcard += step) {
+
+        var bjAction = {
+            dealerCard: upcard,
+            decksNumber: rules.decksNumber,
+            dealerStandOn17: rules.dealerStandOn17,
+            ddAnyNot10Or11: rules.ddAnyNot10Or11,
+            ddAfterSplitRestricted: rules.ddAfterSplitRestricted,
+            resplitAllowed: rules.resplitAllowed,
+            probsAndActions: []
+        };
+
+        dealer.setUpcard(upcard, theDeck);
+
+        if (verbose) {
+            stdout.write("Dealer Up Card " + upcard + '\n');
+        }
+
+        os.write("\nDealer Up Card " + upcard + '\n');
+        os.write("Number of Decks: " + ndecks + '\n');
+
+        if (dealer.getHitsSoft17()) {
+            os.write("Dealer hits soft 17\n");
+        }
+        else {
+            os.write("Dealer stands soft 17\n");
+        }
+
+        if (upcard === constants.ACE || upcard === constants.TEN) {
+            os.write("Results conditioned on dealer not having blackjack\n");
+        }
+
+        /* Combo calcs - max expected value among stand, hit, DD, split according to rules setting
+         Use (l)as vegas or (r)eno to set DD any two or just 10 & 11
+         Default is DD after split (on hands allowed in previous setting), Use (n)o for no DD after split
+         Default is no replitting, use (m)ultiple hands for replitting to 4 hands allowed
+         Set cache size
+         */
+            if (verbose) {
+                stdout.write("... maximum of hit, stand, double\n");
+            }
+            os.write("\nOPTIMAL STRATEGY: (H)it, (S)tand, (D)ouble, or S(P)lit (DD ");
+            if (ddFlag === enums.DD.any) {
+                os.write("any two cards, ");
+            }
+            else {
+                os.write("10&11 only, ");
+            }
+
+            if (ddAfterSplit) {
+                os.write("DD after split, ");
+                dealer.setDDAfterSplit(ddFlag);
+            }
+            else {
+                os.write("no DD after split, ");
+                dealer.setDDAfterSplit(enums.DD.none);
+            }
+            if (resplitting) {
+                os.write("resplitting allowed");
+            }
+            else {
+                os.write("no resplitting");
+            }
+
+            os.write(")\n");
+            os.write("hand\t1\t2\t3\t4\t5\t6\t7\t8\t9\t10\n");
+            for (c1 = 1; c1 <= 10; c1++) {
+                os.write(c1.toString());
+                for (c2 = 1; c2 <= c1; c2++) {
+                    var standVal = 1.5,
+                        hitVal,
+                        ddVal,
+                        splitVal;
+
+                    hand.reset(c1, c2, theDeck);
+                    if (!hand.isNatural()) {
+                        standVal = hand.standExval(theDeck, dealer);
+                    }
+                    hitVal = hand.hitExval(theDeck, dealer);
+                    if (ddFlag === enums.DD.l0OR11 && (hand.isSoft() || (hand.getTotal() != 10 && hand.getTotal() != 11))) {
+                        ddVal = -5;
+                    }
+                    else {
+                        ddVal = hand.doubleExval(theDeck, dealer);
+                    }
+
+                    if (c1 === c2) {
+                        hand.unhit(c1);
+                        splitVal = hand.approxSplitPlay(theDeck, dealer, resplitting && c1 != 1);
+                        hand.hit(c1);
+                    }
+                    else {
+                        splitVal = -5;
+                    }
+
+                    // get the maximum
+                    var strategy = 'S';
+                    if (hitVal > standVal) {
+                        standVal = hitVal;
+                        strategy = 'H';
+                    }
+
+                    if (ddVal > standVal) {
+                        standVal = ddVal;
+                        strategy = 'D';
+                    }
+
+                    if (splitVal > standVal) {
+                        standVal = splitVal;
+                        strategy = 'P';
+                    }
+                    os.write("\t" /*+ standVal + " "*/ + strategy);
+                    bjAction.probsAndActions.push({card1: c2, card2: c1, action: strategy});
+
+                    theDeck.restore(c1, c2);
+                }
+                os.write('\n');
+            }
+
+        // return upcard to the deck
+        theDeck.restore(upcard);
+
+        bjActions.push(bjAction);
+    }
+
+
+    return bjActions;
+}
 
 // table of standing, hitting, and doubling down expected values
 function produceTable(os, dealer) {
@@ -214,13 +438,24 @@ function produceTable(os, dealer) {
         hand = new Hand(),
         results = null,
         mean = null,
-        exval = null;
+        exval = null
 
-    // intialize
+    var bjActions = [];
+
     var theDeck = new Deck(ndecks);
-
     var step = (upstart <= upend) ? 1 : -1;
     for (upcard = upstart; upcard != upend + step; upcard += step) {
+
+        var bjAction = {
+            dealerCard: upcard,
+            decksNumber: rules.decksNumber,
+            dealerStandOn17: rules.dealerStandOn17,
+            ddAnyNot10Or11: rules.ddAnyNot10Or11,
+            ddAfterSplitRestricted: rules.ddAfterSplitRestricted,
+            resplitAllowed: rules.resplitAllowed,
+            probsAndActions: []
+        };
+
         dealer.setUpcard(upcard, theDeck);
 
         if (verbose) {
@@ -304,11 +539,11 @@ function produceTable(os, dealer) {
         }
 
         /* Combo calcs - max expected value among stand, hit, DD, split according to rules setting
-			Use (l)as vegas or (r)eno to set DD any two or just 10 & 11
-			Default is DD after split (on hands allowed in previous setting), Use (n)o for no DD after split
-			Default is no replitting, use (m)ultiple hands for replitting to 4 hands allowed
-			Set cache size
-		*/
+         Use (l)as vegas or (r)eno to set DD any two or just 10 & 11
+         Default is DD after split (on hands allowed in previous setting), Use (n)o for no DD after split
+         Default is no replitting, use (m)ultiple hands for replitting to 4 hands allowed
+         Set cache size
+         */
         if (comboCalcs) {
             if (verbose) {
                 stdout.write("... maximum of hit, stand, double\n");
@@ -339,7 +574,7 @@ function produceTable(os, dealer) {
             os.write(")\n");
             os.write("hand\t1\t2\t3\t4\t5\t6\t7\t8\t9\t10\n");
             for (c1 = 1; c1 <= 10; c1++) {
-                os.write(c1);
+                os.write(c1.toString());
                 for (c2 = 1; c2 <= c1; c2++) {
                     var standVal = 1.5,
                         hitVal,
@@ -383,7 +618,8 @@ function produceTable(os, dealer) {
                         standVal = splitVal;
                         strategy = 'P';
                     }
-                    os.write("\t" + standVal + " " + strategy);
+                    os.write("\t" /*+ standVal + " "*/ + strategy);
+                    bjAction.probsAndActions.push({card1: c2, card2: c1, action: strategy});
 
                     theDeck.restore(c1, c2);
                 }
@@ -478,22 +714,22 @@ function produceTable(os, dealer) {
         }
 
         /* residuals for counting
-			Does Griffin tables, where dealer up card and player cards are NOT removed. Also hard hitting
-			compares taking one card to standing.
-			The hard hitting results are identical. Griffin states doubling and splitting are approximate, based
-			on adjusted infinite deck results. Here doubling is exact.
-			Griffin not clear on soft hitting. Here exact and compares playing to completion to standing
-			Splitting is not clear. because cards need to be removed to correctly find P(2), P(3), and P(4).
-			Here removed player cards (but not dealer up card) and used approximate splitting method. Results
-			differ from Griffin, but may either be do to removal strategy or to approxiamte splitting methods
-			Uses Combo table settings to control splitting section rules
-			
-			Expected Value = mean + (52*d-r-1)/(52*d-r-R) Sum(i=1,R) E(c_i)/d
-				r = # cards removed in table calcs = 0 for G and 1 for g or 2 for G and 3 for g when splitting
-				R = # cards removed in addition to the base cards
-				d = # of decks
-				E(c_i) is effect on mean on removing card c_i in the table normalized to 1 deck
-		*/
+         Does Griffin tables, where dealer up card and player cards are NOT removed. Also hard hitting
+         compares taking one card to standing.
+         The hard hitting results are identical. Griffin states doubling and splitting are approximate, based
+         on adjusted infinite deck results. Here doubling is exact.
+         Griffin not clear on soft hitting. Here exact and compares playing to completion to standing
+         Splitting is not clear. because cards need to be removed to correctly find P(2), P(3), and P(4).
+         Here removed player cards (but not dealer up card) and used approximate splitting method. Results
+         differ from Griffin, but may either be do to removal strategy or to approxiamte splitting methods
+         Uses Combo table settings to control splitting section rules
+
+         Expected Value = mean + (52*d-r-1)/(52*d-r-R) Sum(i=1,R) E(c_i)/d
+         r = # cards removed in table calcs = 0 for G and 1 for g or 2 for G and 3 for g when splitting
+         R = # cards removed in addition to the base cards
+         d = # of decks
+         E(c_i) is effect on mean on removing card c_i in the table normalized to 1 deck
+         */
         if (residCalcs !== enums.griffin.noGriffin) {
             var hit = null,
                 alt = null;
@@ -502,7 +738,7 @@ function produceTable(os, dealer) {
                 stdout.write("... card removal effects\n");
             }
 
-            var minExval = -.25;
+            var minExval = -0.25;
             if (residCalcs === enums.griffin.fullDeckGriffin) {
                 stdout.write("Split pair (for splitting only) removed\n");
             }
@@ -654,7 +890,10 @@ function produceTable(os, dealer) {
 
         // return upcard to the deck
         theDeck.restore(upcard);
+
+        bjActions.push(bjAction);
     }
+    //});
 }
 
 // print help and user message
