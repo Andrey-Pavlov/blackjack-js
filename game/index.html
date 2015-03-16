@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link rel="stylesheet" href="flippant.css">
+    
+    <style type="text/css">
+        .card {
+            border: 1px solid black;
+            width: 72px;
+            height: 100px;
+        }
+    </style>
+    
+    <script type="text/javascript" src="flippant.js"></script>
+</head>
+
+<body>
+    <div class="centred-container">
+        <div class="cards">
+            <div class="dealer-cards">
+                <div class="card first"></div>
+                <div class="card second flipped"></div>
+            </div>
+            
+            <div class="player-cards">
+                <div class="card first"></div>
+                <div class="card second"></div>
+            </div>
+        </div>
+        <div class="actions">
+            <button id="Hit" type="button">HIT</button>
+            <button id="Stand" type="button">STAND</button>
+            
+            <button id="DD" type="button">Double Down</button>
+            <button id="Split" type="button">Split</button>
+            
+            <button id="Surrender" disabled>Surrender</button>
+            <button id="Insurance" disabled>Insurance</button>
+        </div>
+    </div>
+</body>
+</html>
