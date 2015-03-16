@@ -565,7 +565,7 @@ function produceTable(os, dealer) {
                 dealer.setDDAfterSplit(enums.DD.none);
             }
             if (resplitting) {
-                os.write("resplitting allowed");
+                os.write("resplitting allowed"); 
             }
             else {
                 os.write("no resplitting");
