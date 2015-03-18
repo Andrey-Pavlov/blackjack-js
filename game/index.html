@@ -128,6 +128,33 @@
             $('#Restart').click(function() {
                 window.location.reload();
             })
+
+            var socket = io();
+            $('#text').change(function() {
+
+            });
+
+            $('button').click(function() {
+                socket.emit('action', { action: $(this).val() });
+            });
+
+            socket.on('action', function (data) {
+                var dealer1 = null,
+                        dealer2 = null,
+                        player1 = null,
+                        player2 = null;
+
+                dealer1 = data.dealer.card1;
+                dealer2 = data.dealer.card2;
+
+                player1 = data.player.card1;
+                player2 = data.player.card2;
+
+                console.log(dealer1);
+                console.log(dealer2);
+                console.log(player1);
+                console.log(player2);
+            });
         });
     </script>
 </head>
@@ -180,14 +207,14 @@
             </div>
         </div>
         <div class="actions">
-            <button id="Hit" class="game-action addCard" type="button">HIT</button>
-            <button id="Stand" type="button" class="game-action">STAND</button>
+            <button id="Hit" class="game-action addCard" type="button" value="hit">HIT</button>
+            <button id="Stand" type="button" class="game-action" value="stand">STAND</button>
 
-            <button id="DD" type="button" class="game-action" disabled>Double Down</button>
-            <button id="Split" type="button" class="game-action" disabled>Split</button>
+            <button id="DD" type="button" class="game-action" value="dd" disabled>Double Down</button>
+            <button id="Split" type="button" class="game-action" value="split" disabled>Split</button>
 
-            <button id="Surrender" disabled>Surrender</button>
-            <button id="Insurance" disabled>Insurance</button>
+            <button id="Surrender" value="surrender" disabled>Surrender</button>
+            <button id="Insurance" value="insurance" disabled>Insurance</button>
             <button id="Restart">Restart</button>
         </div>
     </div>
