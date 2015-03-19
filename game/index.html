@@ -110,6 +110,13 @@
             var $card = $('#DealerCard'),
                 $gameActions = $('.game-action');
 
+            var $Split = $('#Split'),
+                    $Surrender = $('#Surrender'),
+                    $Hit = $('#Hit'),
+                    $Stand = $('#Stand'),
+                    $Cheats = $('#Cheats'),
+                    $DD = $('#DD');
+
             $('button.addCard').click(function() {
                 $('#Player').append('<div class="card-container h enable"><div class="card six front"></div><div class="card shirt back"></div></div>');
                 $('#Loose_MoreThan').show();
@@ -125,35 +132,83 @@
                 $gameActions.prop('disabled', true);
             });
 
-            $('#Restart').click(function() {
-                window.location.reload();
-            })
-
             var socket = io();
-            $('#text').change(function() {
 
-            });
-
-            $('button').click(function() {
+            $gameActions.click(function() {
                 socket.emit('action', { action: $(this).val() });
             });
 
+            socket.on('start', function(data) {
+                var dealerCard = data.dealerCard;
+
+                var playerCard1 = data.playerCard1;
+                var playerCard2 = data.playerCard2;
+            })
+
             socket.on('action', function (data) {
-                var dealer1 = null,
-                        dealer2 = null,
-                        player1 = null,
-                        player2 = null;
+                var actions = data.actions;
+                var sortable = [];
+                for (var action in actions) {
+                    sortable.push([action, actions[action]])
+                }
+                sortable.sort(function(a, b) {return b[1] - a[1]});
 
-                dealer1 = data.dealer.card1;
-                dealer2 = data.dealer.card2;
+                for(var j = 1; j < sortable.length; j++) {
+                    $Cheats.append('<span>' + sortable[j] + ':' + actions[sortable[j]] + '</span>')
+                }
 
-                player1 = data.player.card1;
-                player2 = data.player.card2;
+                var value = null;
+                for(var i = 0; i < sortable.length; i++)
+                {
+                    value  = actions[sortable[i]];
 
-                console.log(dealer1);
-                console.log(dealer2);
-                console.log(player1);
-                console.log(player2);
+                    switch (value) {
+                        case 'S':
+                            if($Stand.prop('disabled')){
+                                continue;
+                            }
+                            else
+                            {
+                                break;
+                            }
+                        case 'P':
+                            if($Split.prop('disabled')){
+                                continue;
+                            }
+                            else
+                            {
+                                break;
+                            }
+                        case 'H':
+                            if($Hit.prop('disabled')){
+                                continue;
+                            }
+                            else
+                            {
+                                break;
+                            }
+                        case 'D':
+                            if($DD.prop('disabled')){
+                                continue;
+                            }
+                            else
+                            {
+                                break;
+                            }
+                        case 'R':
+                            if($Surrender.prop('disabled')){
+                                continue;
+                            }
+                            else
+                            {
+                                break;
+                            }
+                }
+
+                    break;
+                }
+
+                $Cheats.prepend('<span><strong>' + sortable[0] + ' : ' + actions[sortable[0]] + '</strong></span>')
             });
         });
     </script>
@@ -213,9 +268,11 @@
             <button id="DD" type="button" class="game-action" value="dd" disabled>Double Down</button>
             <button id="Split" type="button" class="game-action" value="split" disabled>Split</button>
 
-            <button id="Surrender" value="surrender" disabled>Surrender</button>
-            <button id="Insurance" value="insurance" disabled>Insurance</button>
-            <button id="Restart">Restart</button>
+            <button id="Surrender" class="game-action" value="surrender" disabled>Surrender</button>
+            <button id="Insurance" class="game-action" value="insurance" disabled>Insurance</button>
+            <button id="Restart" class="game-action" value="restart">Restart</button>
+        </div>
+        <div id="Cheats">
         </div>
     </div>
 </body>

@@ -643,8 +643,9 @@ function Hand() {
         if (_this.isSoft()) {
             switch (upcard) {
                 case constants.ACE:
-                    if (ndecks === 1 && !dealer.getHitsSoft17() && total === 8)
+                    if (ndecks === 1 && !dealer.getHitsSoft17() && total === 8) {
                         return false;
+                    }
                 case 9:
                     return total < 9;
                 case constants.TEN:

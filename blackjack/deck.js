@@ -3,6 +3,7 @@ var common = require("./common"),
 
 function Deck(nd) {
     var _this = this,
+        isInfinityDeck = false,
         ndecks, // number of decks
         ncards, // number of cards left
         totalCards, // total number of cards
@@ -34,8 +35,11 @@ function Deck(nd) {
             if (nc[card] === 0) {
                 return false;
             }
-            nc[card] --;
-            ncards--;
+
+            if(!isInfinityDeck) {
+                nc[card]--;
+                ncards--;
+            }
 
             return true;
         }
@@ -65,8 +69,11 @@ function Deck(nd) {
             wt.weight = nc[card] / ncards;
         }
 
-        nc[card]--;
-        ncards--;
+        if(!isInfinityDeck) {
+            nc[card]--;
+            ncards--;
+        }
+
         return true;
     };
 
@@ -81,8 +88,9 @@ function Deck(nd) {
             if (splitCard != 11 - upcard)
                 probSplit *= (ncards - nc[11 - upcard] - 1) / (ncards - nc[11 - upcard]);
         }
-        else
+        else {
             probSplit = nc[splitCard] / ncards;
+        }
 
         // one minus is probablity not a split card
         return 1 - probSplit;
@@ -143,10 +151,13 @@ function Deck(nd) {
 
     // restore card(s) - assumes they can be restored
     _this.restore = function(card1, card2) {
+        if(!isInfinityDeck) {
+
         restore(card1);
 
         if (card2) {
             restore(card2);
+        }
         }
 
         function restore(card) {
@@ -272,9 +283,15 @@ function Deck(nd) {
 
     // reset decks to all cards present
     _this.setDecks = function(nd) {
-        ndecks = nd;
-        totalOne = 4 * nd;
-        
+        if(!isFinite(nd)) {
+            isInfinityDeck = true;
+
+            nd = 1;
+        }
+
+            ndecks = nd;
+            totalOne = 4 * nd;
+
         for (var i = constants.ACE; i < constants.TEN; i++) 
         {
             nc[i] = totalOne;

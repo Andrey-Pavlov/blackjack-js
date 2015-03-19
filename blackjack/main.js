@@ -83,11 +83,21 @@ var hitsSoft17 = false,
     }
 
     if (rules.decksNumber) {
-        numopt = parseInt(rules.decksNumber, 10);
-        num = (numopt === 'T' || numopt === 't') ? constants.TEN : (parseInt(numopt, 10));
+        num = parseInt(rules.decksNumber, 10);
+        /*num = (numopt === 'T' || numopt === 't') ? constants.TEN : (parseInt(numopt, 10));
         if (num < constants.ACE || num > constants.TEN || num > 8) {
             stderr.write("Invalid dealer up card (1-9 or T) or number of decks (1-8) setting\n");
             return enums.error.BadOptionErr;
+        }*/
+
+        if(isNaN(num))
+        {
+            num = parseFloat(rules.decksNumber, 10);
+
+            if(isNaN(num))
+            {
+                throw 'err'
+            }
         }
 
         ndecks = num;
@@ -412,6 +422,13 @@ function produceTableComboCalcs(os, dealer, rules) {
                         standVal = splitVal;
                         strategy = 'P';
                     }
+
+                    if(-0.5 > standVal)//Surrender
+                    {
+                        standVal = -0.5;
+                        strategy = 'R';
+                    }
+
                     os.write("\t" /*+ standVal + " "*/ + strategy);
                     bjAction.probsAndActions.push({card1: c2, card2: c1, action: strategy});
 
