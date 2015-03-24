@@ -1,4 +1,5 @@
 var common = require("./common"),
+    utils = require('./utils'),
     constants = common.constants;
 
 function Deck(nd) {
@@ -13,6 +14,18 @@ function Deck(nd) {
         handHashTable = null;
 
     //#region Deck: Methods
+
+    _this.getRandomCard = function() {
+        var indexes = [];
+
+        nc.forEach(function(item, index) {
+            if (item > 0) {
+                indexes.push(index);
+            }
+        });
+
+        return utils.randomFromValues(indexes);
+    };
 
     // remove card(s) (if possible) and return true or false if removed
     _this.remove = function(card1, card2) {
@@ -36,8 +49,8 @@ function Deck(nd) {
                 return false;
             }
 
-            if(!isInfinityDeck) {
-                nc[card]--;
+            if (!isInfinityDeck) {
+                nc[card] --;
                 ncards--;
             }
 
@@ -69,8 +82,8 @@ function Deck(nd) {
             wt.weight = nc[card] / ncards;
         }
 
-        if(!isInfinityDeck) {
-            nc[card]--;
+        if (!isInfinityDeck) {
+            nc[card] --;
             ncards--;
         }
 
@@ -151,13 +164,13 @@ function Deck(nd) {
 
     // restore card(s) - assumes they can be restored
     _this.restore = function(card1, card2) {
-        if(!isInfinityDeck) {
+        if (!isInfinityDeck) {
 
-        restore(card1);
+            restore(card1);
 
-        if (card2) {
-            restore(card2);
-        }
+            if (card2) {
+                restore(card2);
+            }
         }
 
         function restore(card) {
@@ -169,15 +182,13 @@ function Deck(nd) {
     // compile non-decreasing list of removed cards
     _this.getRemovals = function(maxSave, removed, upcard) {
         // are too many gone
-        if (totalCards - ncards - 1 > maxSave) 
-        {
+        if (totalCards - ncards - 1 > maxSave) {
             return false;
         }
 
         // Temporarily reinstate dealer up card 
-        if (upcard > 0) 
-        {
-            nc[upcard]++;
+        if (upcard > 0) {
+            nc[upcard] ++;
         }
 
         // Decribe removed cards in nondecreasing sequence where
@@ -187,30 +198,26 @@ function Deck(nd) {
 
         // Special case for 10's to save small amount of time
         var cardStop = totalTens - nc[constants.TEN];
-        while (num < cardStop)
-        {
+        while (num < cardStop) {
             removed[num++] = constants.TEN;
         }
 
         // Rest of the ranks
         for (var i = 9; i >= constants.ACE; i--) {
             cardStop = num + totalOne - nc[i];
-            
-            while (num < cardStop)
-            {
+
+            while (num < cardStop) {
                 removed[num++] = i;
             }
         }
 
         // Fill remaining card_ids with 0
-        while (num < maxSave)
-        {
+        while (num < maxSave) {
             removed[num++] = 0;
         }
 
         // Remove dealer upcard again
-        if (upcard > 0) 
-        {
+        if (upcard > 0) {
             nc[upcard] --;
         }
 
@@ -223,15 +230,13 @@ function Deck(nd) {
 
     // initialize hand has table, return false if fails
     _this.initHandHashTable = function(dealer) {
-        if (handHashTable != null) 
-        {
+        if (handHashTable != null) {
             return true;
         }
-        
+
         //var handBytes = dealer.getTj(constants.MAX_HAND_SIZE, 11) * 4;//sizeof(int);
-        handHashTable = [];//new Array(handBytes);
-        if (handHashTable === null) 
-        {
+        handHashTable = []; //new Array(handBytes);
+        if (handHashTable === null) {
             return false;
         }
         return true;
@@ -240,8 +245,7 @@ function Deck(nd) {
     // clear the hand hash table
     _this.clearHandHashTable = function(dealer) {
         var length = dealer.getTj(constants.MAX_HAND_SIZE, 11);
-        for (var i = 0; i < length; i++) 
-        {
+        for (var i = 0; i < length; i++) {
             handHashTable[i] = -1;
         }
     };
@@ -256,8 +260,7 @@ function Deck(nd) {
         var removed = new Array(constants.MAX_HAND_SIZE);
         _this.getRemovals(constants.MAX_HAND_SIZE, removed, dealer.getUpcard());
         var address = 0;
-        for (var i = 0; i < constants.MAX_HAND_SIZE; i++)
-        {
+        for (var i = 0; i < constants.MAX_HAND_SIZE; i++) {
             address += dealer.Tj[constants.MAX_HAND_SIZE - i - 1][removed[i]];
         }
 
@@ -283,20 +286,19 @@ function Deck(nd) {
 
     // reset decks to all cards present
     _this.setDecks = function(nd) {
-        if(!isFinite(nd)) {
+        if (!isFinite(nd)) {
             isInfinityDeck = true;
 
             nd = 1;
         }
 
-            ndecks = nd;
-            totalOne = 4 * nd;
+        ndecks = nd;
+        totalOne = 4 * nd;
 
-        for (var i = constants.ACE; i < constants.TEN; i++) 
-        {
+        for (var i = constants.ACE; i < constants.TEN; i++) {
             nc[i] = totalOne;
         }
-        
+
         totalTens = nc[constants.TEN] = 16 * nd;
         totalCards = ncards = 52 * nd;
     };
@@ -317,7 +319,7 @@ function Deck(nd) {
     };
 
     //#endregion
-    
+
     //#region Deck: Constructors and Destructors
 
     if (nd) {

@@ -10,7 +10,7 @@ function Dealer(hits, cacheSize) {
         hand,
         totalWeight = 0,
         ddAfterSplit,
-        removable,
+        removable = true,
         removed = new Array(100),
         //Tarray,
         hold = [];
@@ -293,13 +293,16 @@ function Dealer(hits, cacheSize) {
     // change up card and remove from deck - caller is responsible for restoring to deck
     _this.setUpcard = function(card, deck) {
         hand.reset(card, deck);
-        removable = true;
         _this.clearCache();
     };
 
     _this.getUpcard = function() {
         return hand.getFirstCard();
     };
+    
+    _this.getHand = function() {
+        return hand;
+    }
 
     // for Griffin tables, convert to nonremovable upcard
     _this.makeUnremovable = function(deck) {
@@ -351,6 +354,18 @@ function Dealer(hits, cacheSize) {
     _this.setDDAfterSplit = function(ddOption) {
         ddAfterSplit = ddOption;
     };
+    
+    _this.getTotal = function() {
+        return hand.getTotal();
+    };
+    
+    _this.hit = function(card) {
+        return hand.hit(card);
+    };
+    
+    _this.isNatural = function () {
+        return hand.isNatural();
+    };
 
     //#pragma endregion
 
@@ -384,6 +399,8 @@ function Dealer(hits, cacheSize) {
             totalWeight = oldWeight;
         }
     }
+    
+    
 
     //#region Dealer: Constructors and Destructors
 
