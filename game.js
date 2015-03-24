@@ -96,10 +96,8 @@ function Game() {
     function playerGetCard() {
         var card = theDeck.getRandomCard();
 
-        if (card) {
-            theDeck.remove(card);
-            player.hit(card);
-        }
+        theDeck.remove(card);
+        player.hit(card);
 
         return card;
     }
@@ -107,10 +105,8 @@ function Game() {
     function dealerGetCard() {
         var card = theDeck.getRandomCard();
 
-        if (card) {
-            theDeck.remove(card);
-            dealerHand.hit(card);
-        }
+        theDeck.remove(card);
+        dealerHand.hit(card);
 
         return card;
     }
@@ -168,30 +164,35 @@ function Game() {
         // get the maximum
         var strategy = 'S';
         strategyCalcs.push({
+            name: 'Stand',
             strategy: strategy,
             value: standVal
         });
 
         strategy = 'H';
         strategyCalcs.push({
+            name: 'Hit',
             strategy: strategy,
             value: hitVal
         });
 
         strategy = 'D';
         strategyCalcs.push({
+            name: 'Double Down',
             strategy: strategy,
             value: ddVal
         });
 
         strategy = 'P';
         strategyCalcs.push({
+            name: 'Split',
             strategy: strategy,
             value: splitVal
         });
 
         strategy = 'R';
         strategyCalcs.push({
+            name: 'Surrender',
             strategy: strategy,
             value: -0.5
         });

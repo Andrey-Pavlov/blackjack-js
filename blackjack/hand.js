@@ -8,8 +8,8 @@ var common = require('./common.js'),
 
 function Hand() {
     var total = 0,
-        aces,
-        cards,
+        aces = 0,
+        cards = 0,
         firstCard,
         doubled,
         order,

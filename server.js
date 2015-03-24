@@ -33,6 +33,12 @@ io.on('connection', function(socket) {
                 break;
             case 'surrender':
                 break;
+            case 'restart':
+                    game = new Game(),
+                    initObject = game.start();
+
+                socket.emit('start', initObject);
+                break;
             default:
         }
     });

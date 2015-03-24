@@ -26,7 +26,7 @@
             background-image: url(cards.png);
             border-radius: 7px;
             background-size: 924px 501px;
-            background-position: 0px -402px;
+            background-position: -142px -401px;
         }
         .card.ace {
             background-position-x: 0px;
@@ -50,22 +50,22 @@
             background-position-x: -355px;
         }
         .card.\37 {
-            background-position-x: 498px;
+            background-position-x: 497px;
         }
         .card.\38 {
-            background-position-x: 427px;
+            background-position-x: 426px;
         }
         .card.\39 {
             background-position-x: 356px;
         }
-        .card.\310 {
+        .card.\31\30 {
             background-position-x: 285px;
         }
         .card.jack {
-            background-position-x: 214px;
+            background-position-x: 213px;
         }
         .card.queen {
-            background-position-x: 143px;
+            background-position-x: 142px;
         }
         .card.clubs {
             background-position-y: 0px;
@@ -74,10 +74,10 @@
             background-position-y: 200px;
         }
         .card.diamonds {
-            background-position-y: 400px;
+            background-position-y: 401px;
         }
         .card.hearts {
-            background-position-y: 300px;
+            background-position-y: 301px;
         }
         .game-cards .cards {
             text-align: center;
@@ -101,7 +101,7 @@
             perspective: 500px;
         }
         .card-container.v.enable:hover .front,
-        .card-container.v.flip .front,
+        .card-container.v.flip .front
         {
             transform: rotateX(180deg);
         }
@@ -188,6 +188,9 @@
                 $player.html('');
                 $dealer.html('');
                 $cheats.html('');
+                $('.sucker').hide();
+                $('#Hit').prop('disabled', false);
+                $('#Stand').prop('disabled', false);
 
                 var $card1 = $('#CardTemplate'),
                     $card2 = $('#CardTemplate'),
@@ -215,7 +218,7 @@
                 $cheats.html('');
 
                 for (var i = 0; i < calcs.length; i++) {
-                    $cheats.append('<p><strong>' + calcs[i].strategy + ' : ' + calcs[i].value + '</strong></p>');
+                    $cheats.append('<p><strong>' + calcs[i].name + ' : ' + calcs[i].value + '</strong></p>');
                 }
             });
 
@@ -224,6 +227,8 @@
                     $('#Loose_MoreThan').show();
                     $('.dealerCount').html(hitResult.dealerCount);
                     $('.playerCount').html(hitResult.playerCount);
+                    
+                    $gameActions.not('#Restart').prop('disabled', true);
                 }
                 var $card1 = $('#CardTemplate');
 
@@ -267,6 +272,9 @@
                 else {
                     $('#Loose_BJ').show();
                 }
+                
+                $cheats.html('');
+                $gameActions.not('#Restart').prop('disabled', true);
             });
         });
     </script>
@@ -291,8 +299,8 @@
     </div>
     <div id="Win_BJ" class="sucker">
         <strong>
-        <p>Player Win&nbsp;<span class="dealerCount"></span></p> 
-        <p>Dealer Loose&nbsp;<span class="playerCount"></span></p> 
+        <p>Player Win&nbsp;<span class="playerCount"></span></p> 
+        <p>Dealer Loose&nbsp;<span class="dealerCount"></span></p> 
         </strong>
     </div>
     <div id="Loose_MoreThan" class="sucker">
@@ -336,7 +344,7 @@
             </div>
         </div>
         <div class="actions">
-            <button id="Hit" class="game-action addCard" type="button" value="hit">HIT</button>
+            <button id="Hit" class="game-action" type="button" value="hit">HIT</button>
             <button id="Stand" type="button" class="game-action" value="stand">STAND</button>
 
             <button id="DD" type="button" class="game-action" value="dd" disabled>Double Down</button>
