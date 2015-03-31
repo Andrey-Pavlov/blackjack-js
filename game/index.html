@@ -3,143 +3,7 @@
 
 <head>
     <link rel="stylesheet" href="reset.css">
-
-    <style type="text/css">
-        html,
-        body {
-            height: 100%;
-        }
-        .centred-container {
-            text-align: center;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            height: 300px;
-            width: 100%;
-            margin-left: -50%;
-            margin-top: -200px;
-        }
-        .card {
-            width: 71px;
-            height: 100px;
-            display: inline-block;
-            background-image: url(cards.png);
-            border-radius: 7px;
-            background-size: 924px 501px;
-            background-position: -142px -401px;
-        }
-        .card.ace {
-            background-position-x: 0px;
-        }
-        .card.king {
-            background-position-x: 71px;
-        }
-        .card.\32 {
-            background-position-x: 853px;
-        }
-        .card.\33 {
-            background-position-x: 782px;
-        }
-        .card.\34 {
-            background-position-x: 711px;
-        }
-        .card.\35 {
-            background-position-x: 640px;
-        }
-        .card.\36 {
-            background-position-x: -355px;
-        }
-        .card.\37 {
-            background-position-x: 497px;
-        }
-        .card.\38 {
-            background-position-x: 426px;
-        }
-        .card.\39 {
-            background-position-x: 356px;
-        }
-        .card.\31\30 {
-            background-position-x: 285px;
-        }
-        .card.jack {
-            background-position-x: 213px;
-        }
-        .card.queen {
-            background-position-x: 142px;
-        }
-        .card.clubs {
-            background-position-y: 0px;
-        }
-        .card.spades {
-            background-position-y: 200px;
-        }
-        .card.diamonds {
-            background-position-y: 401px;
-        }
-        .card.hearts {
-            background-position-y: 301px;
-        }
-        .game-cards .cards {
-            text-align: center;
-        }
-        .actions {
-            width: 210px;
-            margin: 0 auto;
-        }
-        .actions button {
-            width: 100px;
-            margin-bottom: 10px;
-        }
-        .hidden {
-            display: none;
-        }
-        .card-container {
-            width: 71px;
-            height: 100px;
-            display: inline-block;
-            position: relative;
-            perspective: 500px;
-        }
-        .card-container.v.enable:hover .front,
-        .card-container.v.flip .front
-        {
-            transform: rotateX(180deg);
-        }
-        .card-container.v.enable:hover .back,
-        .card-container.v.flip .back {
-            transform: rotateX(0deg);
-        }
-        .card-container.v .back {
-            transform: rotateX(-180deg);
-        }
-        .card-container.h.enable:hover .front,
-        .card-container.h.flip .front {
-            transform: rotateY(180deg);
-        }
-        .card-container.h.enable:hover .back,
-        .card-container.h.flip .back {
-            transform: rotateY(0deg);
-        }
-        .card-container.h .back {
-            transform: rotateY(-180deg);
-        }
-        .card-container .front,
-        .card-container .back {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            box-sizing: border-box;
-            transition: all 0.5s ease-in;
-            backface-visibility: hidden;
-            display: block;
-        }
-        .sucker {
-            display: none;
-            text-align: center;
-            font-weight: bold;
-            font-size: 4em;
-        }
-    </style>
+    <link rel="stylesheet" href="game.css">
 
     <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.3.js"></script>
     <script type="text/javascript" src="https://code.jquery.com/ui/1.11.4/jquery-ui.min.js"></script>
@@ -148,136 +12,9 @@
     <script type="text/javascript" src="../browser-js/utils.js"></script>
     <script type="text/javascript" src="../blackjack/utils.js"></script>
     <script type="text/javascript" src="../browser-js/extends.js"></script>
-    <script>
-        $(function() {
-            var $dealer = $('#Dealer'),
-                $player = $('#Player'),
-                $cheats = $('#Cheats'),
-                $gameActions = $('.game-action');
-
-
-            var utils = app.utils,
-                socket = io();
-
-            var cards = ['jack', 'queen', 'king', 'ace', 2, 3, 4, 5, 6, 7, 8, 9, 10],
-                tenCards = ['jack', 'queen', 'king', 10],
-                suits = ['spades', 'diamonds', 'clubs', 'hearts'];
-
-            $gameActions.click(function() {
-                socket.emit('action', {
-                    action: $(this).val()
-                });
-            });
-
-            function getCardClass(cardValue) {
-                if (cardValue === 1) {
-                    return 'ace';
-                }
-                else if (cardValue === 10) {
-                    return utils.randomFromValues(tenCards);
-                }
-                else if (cardValue !== null && cardValue !== undefined) {
-                    return cardValue;
-                }
-                else {
-                    return 'shirt';
-                }
-            }
-
-            socket.on('start', function(startResult) {
-                $player.html('');
-                $dealer.html('');
-                $cheats.html('');
-                $('.sucker').hide();
-                $('#Hit').prop('disabled', false);
-                $('#Stand').prop('disabled', false);
-
-                var $card1 = $('#CardTemplate'),
-                    $card2 = $('#CardTemplate'),
-                    $card3 = $('#CardTemplate'),
-                    $card4 = $('#CardTemplate'),
-                    playerCards = startResult.player.cards,
-                    dealerCards = startResult.dealer.cards,
-                    dealerCount = startResult.dealer.count;
-
-                var pc1 = $card1.html().format(getCardClass(playerCards[0]), utils.randomFromValues(suits), 'enable');
-                var pc2 = $card2.html().format(getCardClass(playerCards[1]), utils.randomFromValues(suits), 'enable');
-                var dc1 = $card3.html().format(getCardClass(dealerCards[0]), utils.randomFromValues(suits), 'enable');
-                var dc2 = $card4.html().format(getCardClass(dealerCards[1]), '', 'enable');
-
-                $player.append(pc1);
-                $player.append(pc2);
-
-                $dealer.append(dc1);
-                $dealer.append(dc2);
-
-                socket.emit('getCalcs');
-            });
-
-            socket.on('calcs', function(calcs) {
-                $cheats.html('');
-
-                for (var i = 0; i < calcs.length; i++) {
-                    $cheats.append('<p><strong>' + calcs[i].name + ' : ' + calcs[i].value + '</strong></p>');
-                }
-            });
-
-            socket.on('hit', function(hitResult) {
-                if (hitResult.playerCount > 21) {
-                    $('#Loose_MoreThan').show();
-                    $('.dealerCount').html(hitResult.dealerCount);
-                    $('.playerCount').html(hitResult.playerCount);
-                    
-                    $gameActions.not('#Restart').prop('disabled', true);
-                }
-                var $card1 = $('#CardTemplate');
-
-                var pc1 = $card1.html().format(getCardClass(hitResult.card), utils.randomFromValues(suits), 'enable');
-
-                $player.append(pc1);
-
-                if (hitResult.playerCount < 21) {
-                    socket.emit('getCalcs');
-                }
-                else {
-                    $cheats.html('');
-                }
-            });
-
-            socket.on('stand', function(standResult) {
-
-                var $card1 = $('#CardTemplate');
-
-                for (var i = 1; i < standResult.cards.length; i++) {
-                    var card = $card1.html().format(getCardClass(standResult.cards[i]), utils.randomFromValues(suits), 'enable');
-
-                    $dealer.append(card);
-                }
-
-                var $frontCard = $($dealer.find('.card.front')[1]),
-                    $backCard = $($dealer.find('.card.back')[1]);
-
-                $backCard.addClass(getCardClass('' + standResult.cards[0]));
-                $backCard.addClass(utils.randomFromValues(suits));
-                $backCard.removeClass('back').addClass('front');
-                $frontCard.removeClass('front').addClass('back')
-                    // $secondCard.parent().addClass('flip');
-
-                $('.dealerCount').html(standResult.dealerCount);
-                $('.playerCount').html(standResult.playerCount);
-
-                if (standResult.dealerCount > 21 || standResult.dealerCount < standResult.playerCount) {
-                    $('#Win_BJ').show();
-                }
-                else {
-                    $('#Loose_BJ').show();
-                }
-                
-                $cheats.html('');
-                $gameActions.not('#Restart').prop('disabled', true);
-            });
-        });
-    </script>
+    <script type="text/javascript" src="../browser-js/extends.js"></script>
+    <script type="text/javascript" src="game.js"></script>
+    <script type="text/javascript" src="bot.js"></script>
 
     <script type="text/template" id="CardTemplate">
         <div class="card-container h {2}">
@@ -287,76 +24,90 @@
             </div>
         </div>
     </script>
+    <script type="text/template" id="LogTemplate">
+        <span>Bet: {0}; </span>
+        <span>Balance: {1}; </span>
+        <span>DealerCards: {2}; </span>
+        <span>PlayerCards: {3}; </span>
+        <span>WinLoseDraw: {4}; </span>
+        <span>Actions: {5};</span>
+        <hr/>
+    </script>
+
+    <script>
+        $(function() {
+            app.game.init();
+        });
+    </script>
 </head>
 
 <body>
-    <div id="Loose_BJ" class="sucker">
-        <strong>
-        <p>Dealer Win&nbsp;<span class="dealerCount"></span></p> 
-        <p>Player Loose&nbsp;<span class="playerCount"></span></p> 
-        <p>You are sucker.</p>
+    <div class="top-container">
+        <div id="Result" class="result">
+            <strong>
+            <p id="Win">WIN</p>
+            <p id="Lose">LOSE</p>
+            <p id="Draw">DRAW</p>
         </strong>
+            <p>Dealer &nbsp;<span id="DealerCount"></span>
+            </p>
+            <p>Player &nbsp;<span id="PlayerCount"></span>
+            </p>
+        </div>
     </div>
-    <div id="Win_BJ" class="sucker">
-        <strong>
-        <p>Player Win&nbsp;<span class="playerCount"></span></p> 
-        <p>Dealer Loose&nbsp;<span class="dealerCount"></span></p> 
-        </strong>
-    </div>
-    <div id="Loose_MoreThan" class="sucker">
-        <strong>
-        <p>More than 21!&nbsp;<span class="playerCount"></span></p> 
-        <p>You are sucker.</p>
-        </strong>
-    </div>
-    <div class="centred-container">
-        <div class="game-cards">
-            <div>Dealer cards:</div>
-            <div id="Dealer" class="dealer cards">
-                <!--<div class="card-container h enable">-->
-                <!--    <div class="card ace front">-->
-                <!--    </div>-->
-                <!--    <div class="card shirt back">-->
-                <!--    </div>-->
-                <!--</div>-->
-                <!--<div id="DealerCard" class="card-container h">-->
-                <!--    <div class="card shirt front">-->
-                <!--    </div>-->
-                <!--    <div class="card back">-->
-                <!--    </div>-->
-                <!--</div>-->
+    <div class="centered-container">
+        <div class="game-container">
+            <div class="start">
+                <button type="button" data-bet="2" value="start">BET 2$</button>
+                <button type="button" data-bet="4" value="start">BET 4$</button>
+                <button type="button" data-bet="10" value="start">BET 10$</button>
+                <button type="button" id="Bet" data-bet="30" value="start">BET 30$</button>
             </div>
+            <div class="game-cards">
+                <div>Dealer cards:</div>
+                <div id="Dealer" class="dealer cards">
+                </div>
 
-            <div>Player cards:</div>
-            <div id="Player" class="player cards">
-                <!--<div class="card-container h enable">-->
-                <!--    <div class="card king front">-->
-                <!--    </div>-->
-                <!--    <div class="card shirt back">-->
-                <!--    </div>-->
-                <!--</div>-->
-                <!--<div class="card-container h enable">-->
-                <!--    <div class="card king front">-->
-                <!--    </div>-->
-                <!--    <div class="card shirt back">-->
-                <!--    </div>-->
-                <!--</div>-->
+                <div>Player cards:</div>
+                <div id="Player" class="player cards">
+                </div>
             </div>
         </div>
-        <div class="actions">
-            <button id="Hit" class="game-action" type="button" value="hit">HIT</button>
-            <button id="Stand" type="button" class="game-action" value="stand">STAND</button>
 
-            <button id="DD" type="button" class="game-action" value="dd" disabled>Double Down</button>
-            <button id="Split" type="button" class="game-action" value="split" disabled>Split</button>
+        <div class="actions-probs-container">
+            <div class="actions-probs">
+                <div id="Cheats" class="cheats">
+                </div><!--
+                --><div class="actions">
+                    <button id="Hit" class="game-action" type="button" value="H">HIT</button>
+                    <button id="Stand" type="button" class="game-action" value="S">STAND</button>
 
-            <button id="Surrender" class="game-action" value="surrender" disabled>Surrender</button>
-            <button id="Insurance" class="game-action" value="insurance" disabled>Insurance</button>
-            <button id="Restart" class="game-action" value="restart">Restart</button>
-        </div>
-        <div id="Cheats">
+                    <button id="DD" type="button" class="game-action" value="D">Double Down</button>
+                    <button id="Split" type="button" class="game-action not-available" value="P" disabled>Split</button>
+
+                    <button id="Surrender" class="game-action" value="R">Surrender</button>
+                    <button id="Insurance" class="game-action not-available" value="insurance" disabled>Insurance</button>
+                    <button id="Restart" class="game-action" value="restart">Restart</button>
+                </div>
+            </div>
         </div>
     </div>
+    <table class="bottom-container">
+        <tbody>
+            <tr>
+                <td class="panel-items">
+                    Balance: <span id='Balance'>0</span>&nbsp;USD
+                </td>
+                <td rowspan="2" class="panel-items">
+                    <div id="Log" class="logs">
+                    </div>
+                </td>
+            </tr>
+            <tr class="panel-items">
+                <td>Bet: <span id="CurrentBet">0</span>&nbsp;USD</td>
+            </tr>
+        </tbody>
+    </table>
 </body>
 
 </html>

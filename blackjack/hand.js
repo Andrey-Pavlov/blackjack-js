@@ -10,6 +10,7 @@ function Hand() {
     var total = 0,
         aces = 0,
         cards = 0,
+        cardsValues = [],
         firstCard,
         doubled,
         order,

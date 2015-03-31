@@ -1,0 +1,200 @@
+        html,
+        body {
+            height: 100%;
+        }
+        /* Top container */
+        
+        .top-container {
+            position: absolute;
+            border: 1px solid #000;
+            height: 100px;
+            width: 100%;
+        }
+        /*------------------------*/
+        /* Centered container */
+        
+        .centered-container {
+            position: absolute;
+            top: 100px;
+            width: 100%;
+            bottom: 200px;
+        }
+        /*------------------------*/
+        /* Bottom container */
+        
+        .bottom-container .panel-items {
+            width: 50%;
+            text-align: center;
+            vertical-align: middle;
+            border-right: 1px solid #000;
+        }
+        .bottom-container td,
+        .bottom-container th {
+            padding: 10px;
+        }
+        .bottom-container .logs {
+            overflow-y: scroll;
+            height: 100%;
+        }
+        .bottom-container {
+            position: absolute;
+            bottom: 0;
+            height: 200px;
+            width: 100%;
+            border-top: 1px;
+            border-color: #000;
+            border-style: solid;
+        }
+        /*------------------------*/
+        
+        .game-container {
+            text-align: center;
+            margin-top: 50px;
+        }
+        .card {
+            width: 71px;
+            height: 100px;
+            display: inline-block;
+            background-image: url(cards.png);
+            border-radius: 7px;
+            background-size: 924px 501px;
+            background-position: -142px -401px;
+        }
+        .card.ace {
+            background-position-x: 0px;
+        }
+        .card.king {
+            background-position-x: 71px;
+        }
+        .card.\32 {
+            background-position-x: 853px;
+        }
+        .card.\33 {
+            background-position-x: 782px;
+        }
+        .card.\34 {
+            background-position-x: 711px;
+        }
+        .card.\35 {
+            background-position-x: 640px;
+        }
+        .card.\36 {
+            background-position-x: -355px;
+        }
+        .card.\37 {
+            background-position-x: 497px;
+        }
+        .card.\38 {
+            background-position-x: 426px;
+        }
+        .card.\39 {
+            background-position-x: 356px;
+        }
+        .card.\31\30 {
+            background-position-x: 285px;
+        }
+        .card.jack {
+            background-position-x: 213px;
+        }
+        .card.queen {
+            background-position-x: 142px;
+        }
+        .card.clubs {
+            background-position-y: 0px;
+        }
+        .card.spades {
+            background-position-y: 200px;
+        }
+        .card.diamonds {
+            background-position-y: 401px;
+        }
+        .card.hearts {
+            background-position-y: 301px;
+        }
+        .game-cards .cards {
+            text-align: center;
+        }
+        .actions {
+            padding: 5px;
+            display: inline-block;
+            width: 320px;
+            margin: 0 auto;
+            text-align: center;
+            background-color: rgba(86, 255, 0, 0.26);
+            height: 100%;
+            vertical-align: middle;
+        }
+        .actions button {
+            width: 100px;
+            margin-bottom: 10px;
+            vertical-align: middle;
+        }
+        .hidden {
+            display: none;
+        }
+        .card-container {
+            width: 71px;
+            height: 100px;
+            display: inline-block;
+            position: relative;
+            perspective: 500px;
+        }
+        .card-container.v.enable:hover .front,
+        .card-container.v.flip .front {
+            transform: rotateX(180deg);
+        }
+        .card-container.v.enable:hover .back,
+        .card-container.v.flip .back {
+            transform: rotateX(0deg);
+        }
+        .card-container.v .back {
+            transform: rotateX(-180deg);
+        }
+        .card-container.h.enable:hover .front,
+        .card-container.h.flip .front {
+            transform: rotateY(180deg);
+        }
+        .card-container.h.enable:hover .back,
+        .card-container.h.flip .back {
+            transform: rotateY(0deg);
+        }
+        .card-container.h .back {
+            transform: rotateY(-180deg);
+        }
+        .card-container .front,
+        .card-container .back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            box-sizing: border-box;
+            transition: all 0.5s ease-in;
+            backface-visibility: hidden;
+            display: block;
+        }
+        .result {
+            display: none;
+            text-align: center;
+            font-weight: bold;
+            font-size: 2em;
+        }
+        .actions-probs-container {
+            position: absolute;
+            bottom: 0px;
+            width: 100%;
+            height: 150px;
+        }
+        .actions-probs {
+            position: relative;
+            margin: 0 auto;
+            width: 641px;
+            height: 100%;
+        }
+        .cheats {
+            padding: 10px;
+            display: inline-block;
+            vertical-align: middle;
+            width: 321px;
+            border-right: 1px solid black;
+            height: 100%;
+            background-color: rgba(255, 0, 0, 0.26);
+        }

@@ -52,8 +52,10 @@ function Game() {
         dealerHand = dealer.getHand(),
         player = new Hand(),
         theDeck = new Deck(ndecks),
-        pc1 = playerGetCard(),
-        pc2 = playerGetCard();
+        playerCards = [],
+        dealerCards = [],
+        pc1 = null,
+        pc2 = null;
 
     if (ddAfterSplit) {
         dealer.setDDAfterSplit(ddFlag);
@@ -62,35 +64,28 @@ function Game() {
         dealer.setDDAfterSplit(enums.DD.none);
     }
 
-    _this.start = function() {
-        var dealerCount = dealerHand.getTotal(),
-            playerCount = dealerHand.getTotal(),
-            dc1 = dealerGetCard(),
-            dc2 = dealer.setUpcard(dc1, theDeck);
+    _this.initObject = null;
 
-        var calcs = _this.getCals();
+    _this.actionsTrace = [];
 
-        return {
-            player: {
-                cards: [pc1, pc2],
-                count: dealerCount
-            },
-            dealer: {
-                cards: [dc1, dc2],
-                count: playerCount
-            },
-            calcs: calcs
-        };
-    };
+    _this.winLoseDraw = null;
 
     _this.hit = function() {
+        _this.actionsTrace.push('H');
+
         var card = playerGetCard();
 
-        return {
+        if (player.getTotal() > 21) {
+            _this.winLoseDraw = 'lose';
+        }
+
+        var result = {
             card: card,
             playerCount: player.getTotal(),
             dealerCount: dealerHand.getTotal()
         };
+
+        return result;
     };
 
     function playerGetCard() {
@@ -98,6 +93,8 @@ function Game() {
 
         theDeck.remove(card);
         player.hit(card);
+
+        playerCards.push(card);
 
         return card;
     }
@@ -108,29 +105,72 @@ function Game() {
         theDeck.remove(card);
         dealerHand.hit(card);
 
+        dealerCards.push(card);
+
         return card;
     }
 
     _this.stand = function() {
+        _this.actionsTrace.push('S');
+
         var cards = [];
 
         recursive(cards);
 
-        return {
+        var dealerCount = dealerHand.getTotal();
+        var playerCount = player.getTotal();
+
+        if (dealerCount > 21 || playerCount > dealerCount) {
+            _this.winLoseDraw = 'win';
+        }
+        else if (dealerCount === playerCount) {
+            _this.winLoseDraw = 'draw';
+        }
+        else {
+            _this.winLoseDraw = 'lose';
+        }
+
+        var result = {
             cards: cards,
-            dealerCount: dealerHand.getTotal(),
-            playerCount: player.getTotal()
+            dealerCount: dealerCount,
+            playerCount: playerCount
         };
+
+        return result;
 
         function recursive(cards) {
             var card = dealerGetCard();
             cards.push(card);
 
-            // hit again or add to probabilities
             if (dealerHand.getTotal() < 17 || (dealerHand.isSoft17() && hitsSoft17)) {
                 recursive(cards);
             }
         }
+    };
+
+    _this.doubleDown = function() {
+        _this.actionsTrace.push('D');
+
+        var hit = _this.hit();
+        if (hit.winLoseDraw !== 'lose') {
+            var stand = _this.stand();
+
+            stand.card = hit.card;
+
+            return stand;
+        }
+
+        return hit;
+    };
+
+    _this.surrender = function() {
+        _this.actionsTrace.push('R');
+
+        _this.winLoseDraw = 'lose';
+
+        return {
+            winLoseDraw: _this.winLoseDraw
+        };
     };
 
     _this.getCals = function() {
@@ -176,26 +216,28 @@ function Game() {
             value: hitVal
         });
 
-        strategy = 'D';
-        strategyCalcs.push({
-            name: 'Double Down',
-            strategy: strategy,
-            value: ddVal
-        });
+        if (player.getLength() == 2) {
+            strategy = 'P';
+            strategyCalcs.push({
+                name: 'Split',
+                strategy: strategy,
+                value: splitVal
+            });
 
-        strategy = 'P';
-        strategyCalcs.push({
-            name: 'Split',
-            strategy: strategy,
-            value: splitVal
-        });
+            strategy = 'D';
+            strategyCalcs.push({
+                name: 'Double Down',
+                strategy: strategy,
+                value: ddVal
+            });
 
-        strategy = 'R';
-        strategyCalcs.push({
-            name: 'Surrender',
-            strategy: strategy,
-            value: -0.5
-        });
+            strategy = 'R';
+            strategyCalcs.push({
+                name: 'Surrender',
+                strategy: strategy,
+                value: -0.5
+            });
+        }
 
         strategyCalcs.sort(compareCards);
         strategyCalcs.reverse();
@@ -213,9 +255,43 @@ function Game() {
         }
     };
 
+    _this.getDealerCards = function() {
+        return dealerCards;
+    };
+
+    _this.getPlayerCards = function() {
+        return playerCards;
+    };
+
     _this.reset = function() {
         theDeck = new Deck(ndecks);
     };
+
+    (function() {
+        pc1 = playerGetCard();
+        pc2 = playerGetCard();
+
+        var dealerCount = dealerHand.getTotal(),
+            playerCount = dealerHand.getTotal(),
+            dc1 = theDeck.getRandomCard();
+
+        dealer.setUpcard(dc1, theDeck);
+        dealerCards.push(dc1);
+
+        var calcs = _this.getCals();
+
+        _this.initObject = {
+            player: {
+                cards: [pc1, pc2],
+                count: dealerCount
+            },
+            dealer: {
+                cards: [dc1, null],
+                count: playerCount
+            },
+            calcs: calcs
+        };
+    }());
 }
 
 exports.Game = Game;
