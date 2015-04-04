@@ -10,6 +10,8 @@ $(function() {
 
     var launched = false;
 
+    var speed = 750;
+    
     window.startBot = function() {
         if (launched === false) {
             launched = true;
@@ -42,13 +44,12 @@ $(function() {
                         throw 'err';
                 }
 
-
                 $element.click();
 
                 if (command !== 'restart') {
                     setTimeout(function() {
                         socket.emit('getBotCommand');
-                    }, 1000);
+                    }, speed);
                 }
             });
 
@@ -60,7 +61,7 @@ $(function() {
                 $bet.click();
                 setTimeout(function() {
                     socket.emit('getBotCommand');
-                }, 1000);
+                }, speed);
             }
 
             return f();

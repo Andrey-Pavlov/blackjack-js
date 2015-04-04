@@ -11,19 +11,19 @@ shareExports.randomDoubleFromInterval = function(min, max) {
 
 shareExports.randomFromValues = function() {
         if (arguments.length > 1) {
-            var number = this.randomIntFromInterval(0, arguments.length - 1);
+            var number = shareExports.randomIntFromInterval(0, arguments.length - 1);
 
             return arguments[number];
         }
         else if (arguments.length === 1) {
             var arrayOrObject = arguments[0];
             if (Array.isArray(arrayOrObject)) {
-                return arrayOrObject[this.randomIntFromInterval(0, arrayOrObject.length - 1)];
+                return arrayOrObject[shareExports.randomIntFromInterval(0, arrayOrObject.length - 1)];
             }
             else {
                 var names = Object.keys(arrayOrObject);
 
-                return arrayOrObject[this.randomIntFromInterval(0, names.length - 1)]
+                return arrayOrObject[shareExports.randomIntFromInterval(0, names.length - 1)]
             }
         }
     }
@@ -32,6 +32,11 @@ shareExports.randomFromValues = function() {
 shareExports.clone = function(obj) {
     return JSON.parse(JSON.stringify(obj));
 };
+
+shareExports.notNullOrUndefined = function(value)
+{
+    return !(value === undefined || value === null);
+}
 
 shareExports.extend = function(booleanOrout) {
     

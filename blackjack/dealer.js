@@ -302,7 +302,7 @@ function Dealer(hits, cacheSize) {
     
     _this.getHand = function() {
         return hand;
-    }
+    };
 
     // for Griffin tables, convert to nonremovable upcard
     _this.makeUnremovable = function(deck) {
@@ -361,10 +361,6 @@ function Dealer(hits, cacheSize) {
     
     _this.hit = function(card) {
         return hand.hit(card);
-    };
-    
-    _this.isNatural = function () {
-        return hand.isNatural();
     };
 
     //#pragma endregion

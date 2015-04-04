@@ -6,7 +6,6 @@
         
         .top-container {
             position: absolute;
-            border: 1px solid #000;
             height: 100px;
             width: 100%;
         }
@@ -22,11 +21,51 @@
         /*------------------------*/
         /* Bottom container */
         
+        .bottom-container {
+            position: absolute;
+            bottom: 0;
+            height: 470px;
+            width: 100%;
+            table-layout: fixed;
+            empty-cells: hide;
+        }
         .bottom-container .panel-items {
-            width: 50%;
             text-align: center;
             vertical-align: middle;
-            border-right: 1px solid #000;
+            border: 1px solid #000;
+        }
+        /*.bottom-container .panel-items.chart {*/
+        /*    height: 350px;*/
+        /*}*/
+        .chart
+        {
+            height: 351px;
+        }
+        .chart canvas {
+            height: 100% !important;
+            width: 100% !important;
+        }
+        .actions {
+            padding: 5px 90px;
+            text-align: center;
+            background-color: rgba(86, 255, 0, 0.26);
+            bottom: 0px;
+        }
+        .actions button {
+            width: 100px;
+            margin-bottom: 10px;
+            vertical-align: middle;
+        }
+        .bottom-container .panel-items.rigth {
+            width: 267px;
+        }
+        .bottom-container .cheats {
+            width: 265px;
+            height: 140px;
+            background-color: rgba(255, 0, 0, 0.26);
+        }
+        .bottom-container .stats {
+            height: 140px;
         }
         .bottom-container td,
         .bottom-container th {
@@ -34,16 +73,7 @@
         }
         .bottom-container .logs {
             overflow-y: scroll;
-            height: 100%;
-        }
-        .bottom-container {
-            position: absolute;
-            bottom: 0;
-            height: 200px;
-            width: 100%;
-            border-top: 1px;
-            border-color: #000;
-            border-style: solid;
+            height: 93px;
         }
         /*------------------------*/
         
@@ -114,21 +144,6 @@
         .game-cards .cards {
             text-align: center;
         }
-        .actions {
-            padding: 5px;
-            display: inline-block;
-            width: 320px;
-            margin: 0 auto;
-            text-align: center;
-            background-color: rgba(86, 255, 0, 0.26);
-            height: 100%;
-            vertical-align: middle;
-        }
-        .actions button {
-            width: 100px;
-            margin-bottom: 10px;
-            vertical-align: middle;
-        }
         .hidden {
             display: none;
         }
@@ -176,25 +191,4 @@
             text-align: center;
             font-weight: bold;
             font-size: 2em;
-        }
-        .actions-probs-container {
-            position: absolute;
-            bottom: 0px;
-            width: 100%;
-            height: 150px;
-        }
-        .actions-probs {
-            position: relative;
-            margin: 0 auto;
-            width: 641px;
-            height: 100%;
-        }
-        .cheats {
-            padding: 10px;
-            display: inline-block;
-            vertical-align: middle;
-            width: 321px;
-            border-right: 1px solid black;
-            height: 100%;
-            background-color: rgba(255, 0, 0, 0.26);
         }

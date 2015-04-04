@@ -1,10 +1,13 @@
 $(function() {
     var namespace = app.namespace('game');
 
-    namespace.init = function(options) {
+    namespace.init = function(chart) {
 
         var $dealer = $('#Dealer'),
-            $player = $('#Player'),
+            $player = null,
+            hands = [],
+            $playerTemplate = $('#PlayerTemplate'),
+            $playerContainer = $('#PlayerContainer'),
             $cheats = $('#Cheats'),
             cardTemplate = $('#CardTemplate').html(),
             $result = $('#Result'),
@@ -19,7 +22,9 @@ $(function() {
             $gameActions = $('.game-action:not(.not-available)'),
             $logTemplate = $('#LogTemplate'),
             $log = $('#Log'),
-            $gameActionsNotRestart = $gameActions.not('#Restart');
+            $splitHand = null,
+            $gameActionsNotRestart = $gameActions.not('#Restart'),
+            handIndex = 0;
 
         $gameActions.prop('disabled', true);
 
@@ -31,8 +36,14 @@ $(function() {
             suits = ['spades', 'diamonds', 'clubs', 'hearts'];
 
         $gameActions.click(function() {
+            var val = $(this).val();
+
+            if (val === 'S') {
+                handIndex++;
+            }
+
             socket.emit('action', {
-                action: $(this).val()
+                action: val
             });
         });
 
@@ -50,7 +61,7 @@ $(function() {
         socket.on('restart', function() {
             $startButtons.prop('disabled', false);
 
-            $player.html('');
+            $playerContainer.html('');
             $dealer.html('');
             $cheats.html('');
             $result.hide();
@@ -58,33 +69,61 @@ $(function() {
             $lose.hide();
             $draw.hide();
 
-            $gameActions.prop('disabled', true);
+            hands = [];
+            handIndex = 0;
+            //$gameActions.prop('disabled', true);
         });
 
         socket.on('start', function(startResult) {
             $startButtons.prop('disabled', true);
             $gameActions.prop('disabled', false);
 
-            var playerCards = startResult.player.cards,
-                dealerCards = startResult.dealer.cards;
+            var playerCards = startResult.playerCards,
+                dealerCard = startResult.dealerCard;
 
             var pc1 = cardTemplate.format(getCardClass(playerCards[0]), utils.randomFromValues(suits), 'enable');
             var pc2 = cardTemplate.format(getCardClass(playerCards[1]), utils.randomFromValues(suits), 'enable');
-            var dc1 = cardTemplate.format(getCardClass(dealerCards[0]), utils.randomFromValues(suits), 'enable');
-            var dc2 = cardTemplate.format(getCardClass(dealerCards[1]), '', 'enable');
+            var dc1 = cardTemplate.format(getCardClass(dealerCard), utils.randomFromValues(suits), 'enable');
+            var dc2 = cardTemplate.format('', '', 'enable');
 
+            $player = $($playerTemplate.html());
             $player.append(pc1);
             $player.append(pc2);
+            $playerContainer.html($player);
+            hands.push($player);
 
             $dealer.append(dc1);
             $dealer.append(dc2);
+        });
 
-            socket.emit('getCalcs');
+        socket.on('split', function(splitResult) {
+            var $player = hands[handIndex];
+
+            //Split
+            $splitHand = $($playerTemplate.html());
+
+            var pc1 = $player.find('.card-container').last();
+            $splitHand.append(pc1);
+
+            var splc2 = cardTemplate.format(getCardClass(splitResult.splitCard), utils.randomFromValues(suits), 'enable');
+            $splitHand.append(splc2);
+
+            $splitHand.appendTo($playerContainer);
+
+            hands.push($splitHand);
+            //
+            var pc2 = cardTemplate.format(getCardClass(splitResult.playerCard), utils.randomFromValues(suits), 'enable');
+            $player.append(pc2);
         });
 
         socket.on('hit', hit);
+        socket.on('dd', function(ddResult) {
+            hit(ddResult);
+        });
 
         function hit(hitResult) {
+            var $player = hands[handIndex];
+
             var pc1 = cardTemplate.format(getCardClass(hitResult.card), utils.randomFromValues(suits), 'enable');
             $player.append(pc1);
 
@@ -94,27 +133,23 @@ $(function() {
                 $dealerCount.html(hitResult.dealerCount);
                 $playerCount.html(hitResult.playerCount);
 
-                $gameActionsNotRestart.prop('disabled', true);
-            }
-            else {
-                socket.emit('getCalcs');
+                //$gameActionsNotRestart.prop('disabled', true);
+
+                handIndex++;
+
+                $cheats.html('');
             }
         }
 
-        socket.on('dd', function(ddResult) {
-            hit(ddResult);
-
-            if (ddResult.cards) {
-                stand(ddResult);
-            }
-        });
-
         socket.on('surrender', function(surrenderResult) {
+            var $player = hands[handIndex];
+
             $dealerCount.html('');
             $playerCount.html('');
 
             if (surrenderResult.winLoseDraw === 'lose') {
                 $lose.show();
+                handIndex++;
             }
             else {
                 throw err;
@@ -122,21 +157,26 @@ $(function() {
             $result.show();
 
             $cheats.html('');
-            $gameActionsNotRestart.prop('disabled', true);
+            //$gameActionsNotRestart.prop('disabled', true);
         });
 
         socket.on('log', function(log) {
-            var log = $logTemplate.html().format(log.bet, log.balance, log.dealerCards.join(', '), log.playerCards.join(', '), log.winLoseDraw, log.actionsTrace.join(' - '));
-            
-            $log.prepend(log);
+            var logText = $logTemplate.html().format(log.bet, log.balance, log.dealerCount, log.playerCount, log.dealerCards.join(', '), log.playerCards.join(', '), log.winLoseDraw, log.actionsTrace.join(' - '));
+
+            $log.prepend(logText);
         });
 
-        socket.on('stand', stand);
+        socket.on('graph', function(chartData) {
+            chart.addData([chartData.balance], chartData.gamesCount % 50 === 0 ? chartData.gamesCount : '');
 
-        function stand(standResult) {
+            if (chart.datasets[0].points.length === 200) {
+                chart.removeData();
+            }
+        });
 
-            for (var i = 1; i < standResult.cards.length; i++) {
-                var card = cardTemplate.format(getCardClass(standResult.cards[i]), utils.randomFromValues(suits), 'enable');
+        socket.on('stand', function(standResult) {
+            for (var i = 2; i < standResult.dealerCards.length; i++) {
+                var card = cardTemplate.format(getCardClass(standResult.dealerCards[i]), utils.randomFromValues(suits), 'enable');
 
                 $dealer.append(card);
             }
@@ -144,29 +184,32 @@ $(function() {
             var $frontCard = $($dealer.find('.card.front')[1]),
                 $backCard = $($dealer.find('.card.back')[1]);
 
-            $backCard.addClass(getCardClass('' + standResult.cards[0]));
+            $backCard.addClass(getCardClass('' + standResult.dealerCards[1]));
             $backCard.addClass(utils.randomFromValues(suits));
             $backCard.removeClass('back').addClass('front');
             $frontCard.removeClass('front').addClass('back');
 
             $dealerCount.html(standResult.dealerCount);
-            $playerCount.html(standResult.playerCount);
 
+            _.each(standResult.playerHands, function(hand) {
 
-            if (standResult.winLoseDraw === 'win') {
-                $win.show();
-            }
-            else if (standResult.winLoseDraw === 'lose') {
-                $lose.show();
-            }
-            else {
-                $draw.show();
-            }
-            $result.show()
+                $playerCount.html(hand.playerCount);
 
-            $cheats.html('');
-            $gameActionsNotRestart.prop('disabled', true);
-        }
+                if (hand.winLoseDraw === 'win') {
+                    $win.show();
+                }
+                else if (hand.winLoseDraw === 'lose') {
+                    $lose.show();
+                }
+                else {
+                    $draw.show();
+                }
+                $result.show();
+
+                $cheats.html('');
+                //$gameActionsNotRestart.prop('disabled', true);
+            });
+        });
 
         socket.on('calcs', function(calcs) {
             $cheats.html('');

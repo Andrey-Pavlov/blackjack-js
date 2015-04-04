@@ -72,6 +72,8 @@ function Hand() {
         }
 
         cards++;
+        
+        return card;
     };
 
     _this.unhit = function(card, deck) {
@@ -86,6 +88,8 @@ function Hand() {
         if (deck) {
             deck.restore(card);
         }
+        
+        return card;
     };
 
     //Expected values
@@ -224,7 +228,7 @@ function Hand() {
     };
 
     _this.approxSplitPlay = function(deck, dealer, resplit) {
-        var explay;
+        var explay = null;
         if (resplit) {
             // expected value with two split cards removed and conditioned
             // on second card of hand not being a split card
@@ -233,6 +237,7 @@ function Hand() {
             // remove another and repeat expected value
             var ex3 = 0,
                 ex4 = 0;
+                
             if (deck.remove(firstCard)) {
                 ex3 = _this.approxSplitExval(deck, dealer, resplit, 2);
 
@@ -242,8 +247,9 @@ function Hand() {
                     //ex4 = ex3+(ex3-ex2);
                     deck.restore(firstCard);
                 }
-                else
-                    ex4 = 0.;
+                else {
+                    ex4 = 0;
+                }
 
                 deck.restore(firstCard);
 
@@ -257,11 +263,13 @@ function Hand() {
                 // Griffin analysis
                 //explay = 2*prob[0]*ex2 + 3*prob[1]*ex3 + 4*prob[2]*ex4;
             }
-            else
+            else {
                 explay = 2 * ex2;
+            }
         }
-        else
+        else {
             explay = 2 * _this.approxSplitExval(deck, dealer, resplit, 0);
+        }
 
         return explay;
     };
@@ -280,7 +288,10 @@ function Hand() {
 
         for (var i = constants.ACE; i <= constants.TEN; i++) {
             // If resplitting, skip another split card or calculate prob not split card
-            if (resplit && cards === 1 && i === firstCard) continue;
+            if (resplit && cards === 1 && i === firstCard) 
+            {
+                continue;
+            }
 
             // get weight and adjust if resplitting
             if (!deck.removeAndGetWeight(i, wt, dealer)) {
@@ -615,11 +626,11 @@ function Hand() {
 
             // check on double down, if yes return from for a hit,  but set double to no future hits
             if (_this.basicDD(deck, dealer)) {
-                doubled = 2.;
+                doubled = 2;
                 return true;
             }
             else
-                doubled = 1.;
+                doubled = 1;
 
             // two card exceptions
             var exception = {
@@ -994,12 +1005,13 @@ function Hand() {
     _this.getBetPerHand = function() {
         return doubled;
     };
-
+    
     // return card required to make this hand a natural (or zero if none)
     _this.getNaturalCard = function() {
         if (cards > 1) {
             return 0;
         }
+        
         if (total === constants.ACE || total === constants.TEN) {
             return 11 - total;
         }

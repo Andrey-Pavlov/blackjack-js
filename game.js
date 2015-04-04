@@ -5,6 +5,9 @@ var common = require('./blackjack/common.js'),
     Hand = require('./blackjack/hand.js'),
     rules = require('./blackjack/blackjackRules.json');
 
+var utils = require('./blackjack/utils.js');
+var _ = require('lodash');
+
 // global defaults
 var hitsSoft17 = false,
     ddFlag = enums.DD.any,
@@ -46,17 +49,17 @@ if (rules.resplitAllowed === 'true') {
     resplitting = true;
 }
 
-function Game() {
+function Game(bet) {
     var _this = this,
+        theDeck = new Deck(ndecks),
         dealer = new Dealer(hitsSoft17, cacheCards),
         dealerHand = dealer.getHand(),
-        player = new Hand(),
-        theDeck = new Deck(ndecks),
-        playerCards = [],
-        dealerCards = [],
-        pc1 = null,
-        pc2 = null;
+        dealerCards = dealerHand.dealerCards = [],
+        playerHands = [],
+        dc1 = null,
+        dc2 = null;
 
+    //init
     if (ddAfterSplit) {
         dealer.setDDAfterSplit(ddFlag);
     }
@@ -64,40 +67,46 @@ function Game() {
         dealer.setDDAfterSplit(enums.DD.none);
     }
 
-    _this.initObject = null;
+    (function() {
+        dc1 = theDeck.getRandomCard();
 
-    _this.actionsTrace = [];
+        dealer.setUpcard(dc1, theDeck);
+        dealerCards.push(dc1);
 
-    _this.winLoseDraw = null;
+        dc2 = dealerGetCard();
+        
+        playerHands.push(new Player(bet));
+    }());
+    //
 
-    _this.hit = function() {
-        _this.actionsTrace.push('H');
+    _this.playerHands = playerHands;
+    _this.dealerHand = dealerHand;
+    _this.dealerCards = dealerCards;
 
-        var card = playerGetCard();
+    _this.getCurrentHand = function() {
+        var hand = _.find(playerHands, function(playerHand) {
+            return playerHand.isEnded === false;
+        });
 
-        if (player.getTotal() > 21) {
-            _this.winLoseDraw = 'lose';
-        }
-
-        var result = {
-            card: card,
-            playerCount: player.getTotal(),
-            dealerCount: dealerHand.getTotal()
-        };
-
-        return result;
+        return hand;
     };
 
-    function playerGetCard() {
-        var card = theDeck.getRandomCard();
+    _this.checkIsEnded = function() {
+        var playerHand = _.find(playerHands, function(playerHand) {
+            return playerHand.isEnded === false;
+        });
 
-        theDeck.remove(card);
-        player.hit(card);
+        if (utils.notNullOrUndefined(playerHand)) {
+            return false;
+        }
+        else {
+            return true;
+        }
+    };
 
-        playerCards.push(card);
-
-        return card;
-    }
+    _this.getDealerCount = function() {
+        return dealerHand.getTotal();
+    };
 
     function dealerGetCard() {
         var card = theDeck.getRandomCard();
@@ -110,188 +119,275 @@ function Game() {
         return card;
     }
 
+
     _this.stand = function() {
-        _this.actionsTrace.push('S');
-
-        var cards = [];
-
-        recursive(cards);
+        recursive();
 
         var dealerCount = dealerHand.getTotal();
-        var playerCount = player.getTotal();
+        var dealerNatural = dealerHand.isNatural();
 
-        if (dealerCount > 21 || playerCount > dealerCount) {
-            _this.winLoseDraw = 'win';
-        }
-        else if (dealerCount === playerCount) {
-            _this.winLoseDraw = 'draw';
-        }
-        else {
-            _this.winLoseDraw = 'lose';
-        }
+        _.each(playerHands, function(hand) {
+            hand.isEnded = true;
+            var playerCount = hand.getPlayerCount();
+            var playerNatural = hand.isNatural();
 
-        var result = {
-            cards: cards,
-            dealerCount: dealerCount,
-            playerCount: playerCount
-        };
+            if (dealerCount === playerCount) {
+                if (!dealerNatural && playerNatural) {
+                    hand.winLoseDraw = 'win';
+                    hand.dealerOrPlayerBlackjack = 'player';
+                }
+                else if (dealerNatural && !playerNatural) {
+                    hand.winLoseDraw = 'lose';
+                    hand.dealerOrPlayerBlackjack = 'dealer';
+                }
+                else if (!dealerNatural && !playerNatural) {
+                    hand.winLoseDraw = 'draw';
+                }
+                else {
+                    throw 'ex';
+                }
+            }
+            else if (playerCount > dealerCount || dealerCount > 21) {
+                hand.winLoseDraw = 'win';
+            }
+            else if (playerCount < dealerCount) {
+                hand.winLoseDraw = 'lose';
+            }
+            else {
+                throw 'ex';
+            }
+        });
 
-        return result;
+        return playerHands;
 
-        function recursive(cards) {
-            var card = dealerGetCard();
-            cards.push(card);
-
+        function recursive() {
             if (dealerHand.getTotal() < 17 || (dealerHand.isSoft17() && hitsSoft17)) {
-                recursive(cards);
+                dealerGetCard();
+                recursive();
             }
         }
     };
 
-    _this.doubleDown = function() {
-        _this.actionsTrace.push('D');
+    // _this.reset = function() {
+    //     theDeck = new Deck(ndecks);
+    // };
 
-        var hit = _this.hit();
-        if (hit.winLoseDraw !== 'lose') {
-            var stand = _this.stand();
+    function Player(bet, newSplitCard) {
+        var _thisPlayer = this,
+            hand = new Hand();
 
-            stand.card = hit.card;
+        _thisPlayer.bet = bet;
 
-            return stand;
-        }
+        _thisPlayer.actionsTrace = [];
 
-        return hit;
-    };
+        _thisPlayer.winLoseDraw = null;
 
-    _this.surrender = function() {
-        _this.actionsTrace.push('R');
+        _thisPlayer.dealerOrPlayerBlackjack = null;
 
-        _this.winLoseDraw = 'lose';
+        _thisPlayer.isEnded = false;
 
-        return {
-            winLoseDraw: _this.winLoseDraw
+        _thisPlayer.playerCards = [];
+
+
+        //initHand
+        (function() {
+            var card1 = newSplitCard || theDeck.getRandomCard();
+            _thisPlayer.playerCards.push(card1);
+            hand.hit(card1);
+            theDeck.remove(card1);
+
+            var card2 = theDeck.getRandomCard();
+            _thisPlayer.playerCards.push(card2);
+            hand.hit(card2);
+            theDeck.remove(card2);
+
+            if (!!newSplitCard) {
+                hand.reset(card1, card2, theDeck);
+            }
+        }());
+
+        _thisPlayer.getCard = getCard;
+
+        _thisPlayer.isNatural = function() {
+            return hand.isNatural;
         };
-    };
 
-    _this.getCals = function() {
-        var strategyCalcs = [],
-            standVal = 1.5,
-            hitVal,
-            ddVal,
-            splitVal;
+        function getCard() {
+            var card = theDeck.getRandomCard();
 
-        if (!player.isNatural()) {
-            standVal = player.standExval(theDeck, dealer);
+            theDeck.remove(card);
+            hand.hit(card);
+
+            _thisPlayer.playerCards.push(card);
+
+            return card;
         }
 
-        hitVal = player.hitExval(theDeck, dealer);
-        if (ddFlag === enums.DD.l0OR11 && (player.isSoft() || (player.getTotal() != 10 && dealerHand.getTotal() != 11))) {
-            ddVal = -5;
-        }
-        else {
-            ddVal = player.doubleExval(theDeck, dealer);
-        }
-
-        if (player.getLength() === 2 && pc1 === pc2) {
-            player.unhit(pc1);
-            splitVal = player.approxSplitPlay(theDeck, dealer, resplitting && pc1 != 1);
-            player.hit(pc1);
-        }
-        else {
-            splitVal = -5;
-        }
-
-        // get the maximum
-        var strategy = 'S';
-        strategyCalcs.push({
-            name: 'Stand',
-            strategy: strategy,
-            value: standVal
-        });
-
-        strategy = 'H';
-        strategyCalcs.push({
-            name: 'Hit',
-            strategy: strategy,
-            value: hitVal
-        });
-
-        if (player.getLength() == 2) {
-            strategy = 'P';
-            strategyCalcs.push({
-                name: 'Split',
-                strategy: strategy,
-                value: splitVal
-            });
-
-            strategy = 'D';
-            strategyCalcs.push({
-                name: 'Double Down',
-                strategy: strategy,
-                value: ddVal
-            });
-
-            strategy = 'R';
-            strategyCalcs.push({
-                name: 'Surrender',
-                strategy: strategy,
-                value: -0.5
-            });
-        }
-
-        strategyCalcs.sort(compareCards);
-        strategyCalcs.reverse();
-
-        return strategyCalcs;
-
-        function compareCards(a, b) {
-            if (a.value < b.value) {
-                return -1;
-            }
-            if (a.value > b.value) {
-                return 1;
-            }
-            return 0;
-        }
-    };
-
-    _this.getDealerCards = function() {
-        return dealerCards;
-    };
-
-    _this.getPlayerCards = function() {
-        return playerCards;
-    };
-
-    _this.reset = function() {
-        theDeck = new Deck(ndecks);
-    };
-
-    (function() {
-        pc1 = playerGetCard();
-        pc2 = playerGetCard();
-
-        var dealerCount = dealerHand.getTotal(),
-            playerCount = dealerHand.getTotal(),
-            dc1 = theDeck.getRandomCard();
-
-        dealer.setUpcard(dc1, theDeck);
-        dealerCards.push(dc1);
-
-        var calcs = _this.getCals();
-
-        _this.initObject = {
-            player: {
-                cards: [pc1, pc2],
-                count: dealerCount
-            },
-            dealer: {
-                cards: [dc1, null],
-                count: playerCount
-            },
-            calcs: calcs
+        _thisPlayer.getPlayerCount = function() {
+            return hand.getTotal();
         };
-    }());
+
+        _thisPlayer.stand = function() {
+            _thisPlayer.actionsTrace.push('S');
+
+            _thisPlayer.isEnded = true;
+        };
+
+        _thisPlayer.hit = function() {
+            _thisPlayer.actionsTrace.push('H');
+
+            var card = getCard();
+
+            if (hand.getTotal() > 21) {
+                _thisPlayer.winLoseDraw = 'lose';
+                _thisPlayer.isEnded = true;
+            }
+
+            var result = {
+                winLoseDraw: _thisPlayer.winLoseDraw,
+                card: card,
+                playerCount: hand.getTotal()
+            };
+
+            return result;
+        };
+
+        _thisPlayer.doubleDown = function() {
+            _thisPlayer.actionsTrace.push('D');
+
+            var hit = _thisPlayer.hit();
+            // if (hit.winLoseDraw !== 'lose') {
+            //     var stand = _thisPlayer.stand();
+
+            //     stand.card = hit.card;
+            //     return stand;
+            // }
+            _thisPlayer.isEnded = true;
+
+            _thisPlayer.bet *= 2;
+
+            return hit;
+        };
+
+        _thisPlayer.split = function() {
+            _thisPlayer.actionsTrace.push('P');
+            var unhitCard = hand.unhit(_thisPlayer.playerCards.splice(1, 1)[0]);
+
+            var newHand = new Player(_thisPlayer.bet, unhitCard);
+            playerHands.push(newHand);
+
+            var playerCard = getCard();
+
+            return {
+                splitCard: newHand.playerCards[1],
+                playerCard: playerCard
+            };
+        };
+
+        _thisPlayer.surrender = function() {
+            _thisPlayer.actionsTrace.push('R');
+
+            _thisPlayer.winLoseDraw = 'lose';
+
+            _thisPlayer.isEnded = true;
+
+            return {
+                winLoseDraw: _thisPlayer.winLoseDraw
+            };
+        };
+
+        _thisPlayer.getCals = function() {
+            var strategyCalcs = [],
+                standVal = 1.5,
+                hitVal,
+                ddVal,
+                splitVal;
+
+            //deck for calcs
+            dealerHand.unhit(dc2);
+            theDeck.restore(dc2);
+            //
+
+            if (!hand.isNatural()) {
+                standVal = hand.standExval(theDeck, dealer);
+            }
+
+            hitVal = hand.hitExval(theDeck, dealer);
+            if (ddFlag === enums.DD.l0OR11 && (hand.isSoft() || (hand.getTotal() != 10 && dealerHand.getTotal() != 11))) {
+                ddVal = -2;
+            }
+            else {
+                ddVal = hand.doubleExval(theDeck, dealer);
+            }
+
+            if (hand.getLength() === 2 && _thisPlayer.playerCards[0] === _thisPlayer.playerCards[1]) {
+                hand.unhit(_thisPlayer.playerCards[0]);
+                splitVal = hand.approxSplitPlay(theDeck, dealer, resplitting && _thisPlayer.playerCards[0] != 1);
+                hand.hit(_thisPlayer.playerCards[0]);
+            }
+            else {
+                splitVal = -2;
+            }
+
+            // get the maximum
+            var strategy = 'S';
+            strategyCalcs.push({
+                name: 'Stand',
+                strategy: strategy,
+                value: standVal
+            });
+
+            strategy = 'H';
+            strategyCalcs.push({
+                name: 'Hit',
+                strategy: strategy,
+                value: hitVal
+            });
+
+            if (hand.getLength() == 2) {
+                strategy = 'P';
+                strategyCalcs.push({
+                    name: 'Split',
+                    strategy: strategy,
+                    value: splitVal
+                });
+
+                strategy = 'D';
+                strategyCalcs.push({
+                    name: 'Double Down',
+                    strategy: strategy,
+                    value: ddVal
+                });
+
+                strategy = 'R';
+                strategyCalcs.push({
+                    name: 'Surrender',
+                    strategy: strategy,
+                    value: -0.5
+                });
+            }
+
+            strategyCalcs.sort(compareCards);
+            strategyCalcs.reverse();
+
+            //Restore original deck
+            theDeck.remove(dc2);
+            dealerHand.hit(dc2);
+            //
+
+            return strategyCalcs;
+
+            function compareCards(a, b) {
+                if (a.value < b.value) {
+                    return -1;
+                }
+                if (a.value > b.value) {
+                    return 1;
+                }
+                return 0;
+            }
+        };
+    }
 }
 
 exports.Game = Game;

@@ -2,6 +2,6 @@
     "decksNumber": "1",
     "dealerStandOn17": "true",
     "ddAnyNot10Or11": "true",
-    "ddAfterSplitRestricted": "true",
+    "ddAfterSplitRestricted": "false",
     "resplitAllowed": "false"
 }

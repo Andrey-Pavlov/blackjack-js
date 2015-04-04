@@ -1,0 +1,20 @@
+{
+  "name": "BJ",
+  "version": "0.0.0",
+  "authors": [
+    "Andrey Pavlov <paffa4@gmail.com>"
+  ],
+  "description": "BJ",
+  "license": "Commercial/Proprietary",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "Chart.js": "~1.0.2",
+    "lodash": "~3.6.0"
+  }
+}
