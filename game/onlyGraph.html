@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.3.js"></script>
+    <script type="text/javascript" src="../bower_components/Chart.js/Chart.js"></script>
+    <script type="text/javascript" src="../bower_components/lodash/lodash.js"></script>
+    <script src="https://cdn.socket.io/socket.io-1.3.4.js"></script>
+
+    <script type="text/javascript" src="../browser-js/namespace.js"></script>
+    <script type="text/javascript" src="../browser-js/utils.js"></script>
+    <script type="text/javascript" src="../blackjack/utils.js"></script>
+    <script type="text/javascript" src="../browser-js/extends.js"></script>
+    <script type="text/javascript" src="onlyGraph_chart.js"></script>
+    <script>
+        $(function() {
+            app.utils
+
+            var data = {
+                labels: [],
+                datasets: [
+                    {
+                        label: "BlackjackGame",
+                        fillColor: "rgba(0, 132, 255, 0.18)",
+                        strokeColor: "rgba(0, 74, 143, 0.7)",
+                        pointColor: "rgba(220,220,220,1)",
+                        pointStrokeColor: "#ffe",
+                        pointHighlightFill: "#ffe",
+                        pointHighlightStroke: "rgba(220,220,220,1)",
+                        data: []
+                    }
+                ]
+            };
+
+            // Get context with jQuery - using jQuery's .get() method.
+            var ctx = $("#myChart").get(0).getContext("2d");
+            // This will get the first returned node in the jQuery collection.
+            var myChart = new Chart(ctx).Line(data, chartOptions);
+
+            var socket = io();
+
+            var start = false;
+            $('#Start').click(function() {
+                start = true;
+
+                socket.emit('getData');
+            });
+
+            $('#Stop').click(function() {
+                start = false;
+            });
+
+            socket.on('balanceChanged', function(valueObj) {
+                myChart.addData([valueObj.balance], valueObj.count % 50 === 0 ? valueObj.count : '');
+
+                if (myChart.datasets[0].points.length === 300) {
+                    myChart.removeData();
+                }
+
+                if (start) {
+                    setTimeout(function() {
+                        socket.emit('getData');
+                    }, 1000);
+                }
+            });
+
+            var $logContainer = $('#LogContainer');
+            socket.on('log', function(log) {
+                var template = '<span>{0}: <strong>{1}</strong>; </span>';
+
+                $logContainer.prepend(template.format('winLoseDraw', log.winLoseDraw));
+                $logContainer.prepend(template.format('oldBalance', log.oldBalance));
+                $logContainer.prepend(template.format('newBalance', log.newBalance));
+                $logContainer.prepend(template.format('dealerCards', log.dealerCards.join(', ')));
+                $logContainer.prepend(template.format('playerCards', log.playerCards.join(', ')));
+                
+                var probs = [];
+                for (var i = 0; i < log.firstProbs.length; i++) {
+                    var prob = log.firstProbs[i];
+                    
+                    probs.push(prob.strategy + ' ' + prob.value);
+                } 
+                
+                $logContainer.prepend(template.format('firstProbs', probs.join(', ')));
+                $logContainer.prepend(template.format('actionsTrace', log.actionsTrace.join(', ')));
+                $logContainer.prepend(template.format('dealerCount', log.dealerCount));
+                $logContainer.prepend(template.format('playerCount', log.playerCount));
+                $logContainer.prepend(template.format('bet', log.bet));
+                $logContainer.prepend(template.format('gamesCount', log.gamesCount));
+                $logContainer.prepend('<hr/>');
+            });
+        });
+    </script>
+</head>
+
+<body>
+    <button id="Start">Start</button>
+    <button id="Stop">Stop</button>
+    <div>
+        <canvas id="myChart" width="1024" height="500"></canvas>
+    </div>
+
+
+
+    <div id="LogContainer"></div>
+</body>
+
+</html>
