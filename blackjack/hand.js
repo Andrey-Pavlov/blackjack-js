@@ -10,15 +10,10 @@ function Hand() {
     var total = 0,
         aces = 0,
         cards = 0,
-        cardsValues = [],
         firstCard,
         doubled,
         order,
         _this = this;
-
-    _this.getLength = function() {
-        return cards;
-    };
 
     _this.reset = function(card1, card2, deck) {
         if (card2 instanceof Object) {

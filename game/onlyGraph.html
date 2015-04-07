@@ -53,19 +53,27 @@
             socket.on('balanceChanged', function(valueObj) {
                 myChart.addData([valueObj.balance], valueObj.count % 50 === 0 ? valueObj.count : '');
 
-                if (myChart.datasets[0].points.length === 300) {
+                if (myChart.datasets[0].points.length === 100) {
                     myChart.removeData();
                 }
 
                 if (start) {
-                    setTimeout(function() {
-                        socket.emit('getData');
-                    }, 1000);
+                    for (var i = 0; i < 5000000; i++) {
+                        var x = [];
+                        x.push(i);
+                    }
+                    
+                    socket.emit('getData');
                 }
             });
 
             var $logContainer = $('#LogContainer');
+            var logCounter = 1;
             socket.on('log', function(log) {
+                if (logCounter % 100 === 0) {
+                    $logContainer.html('');
+                }
+
                 var template = '<span>{0}: <strong>{1}</strong>; </span>';
 
                 $logContainer.prepend(template.format('winLoseDraw', log.winLoseDraw));
@@ -73,14 +81,14 @@
                 $logContainer.prepend(template.format('newBalance', log.newBalance));
                 $logContainer.prepend(template.format('dealerCards', log.dealerCards.join(', ')));
                 $logContainer.prepend(template.format('playerCards', log.playerCards.join(', ')));
-                
+
                 var probs = [];
                 for (var i = 0; i < log.firstProbs.length; i++) {
                     var prob = log.firstProbs[i];
-                    
+
                     probs.push(prob.strategy + ' ' + prob.value);
-                } 
-                
+                }
+
                 $logContainer.prepend(template.format('firstProbs', probs.join(', ')));
                 $logContainer.prepend(template.format('actionsTrace', log.actionsTrace.join(', ')));
                 $logContainer.prepend(template.format('dealerCount', log.dealerCount));
@@ -88,6 +96,8 @@
                 $logContainer.prepend(template.format('bet', log.bet));
                 $logContainer.prepend(template.format('gamesCount', log.gamesCount));
                 $logContainer.prepend('<hr/>');
+                
+                logCounter++;
             });
         });
     </script>

@@ -3,5 +3,5 @@
     "dealerStandOn17": "true",
     "ddAnyNot10Or11": "true",
     "ddAfterSplitRestricted": "false",
-    "resplitAllowed": "false"
+    "resplitAllowed": "true"
 }

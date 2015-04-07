@@ -322,7 +322,7 @@ function Game(bet) {
                 ddVal = hand.doubleExval(theDeck, dealer);
             }
 
-            if (hand.playerCards.length === 2 && _thisPlayer.playerCards[0] === _thisPlayer.playerCards[1]) {
+            if (_thisPlayer.playerCards.length === 2 && _thisPlayer.playerCards[0] === _thisPlayer.playerCards[1]) {
                 hand.unhit(_thisPlayer.playerCards[0]);
                 splitVal = hand.approxSplitPlay(theDeck, dealer, resplitting && _thisPlayer.playerCards[0] != 1);
                 hand.hit(_thisPlayer.playerCards[0]);
@@ -346,7 +346,7 @@ function Game(bet) {
                 value: hitVal
             });
 
-            if (hand.getLength() == 2) {
+            if (_thisPlayer.playerCards.length == 2) {
                 strategy = 'P';
                 strategyCalcs.push({
                     name: 'Split',

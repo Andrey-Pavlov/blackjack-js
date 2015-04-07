@@ -66,7 +66,7 @@ io.on('connection', function(socket) {
                     balance: balance,
                     count: gamesCount
                 });
-                
+
                 log.createLog(game, hand);
             }
 
