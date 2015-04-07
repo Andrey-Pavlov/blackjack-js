@@ -10,7 +10,7 @@ $(function() {
 
     var launched = false;
 
-    var speed = 750;
+    var speed = 1000;
     
     window.startBot = function() {
         if (launched === false) {

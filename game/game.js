@@ -169,7 +169,7 @@ $(function() {
         socket.on('graph', function(chartData) {
             chart.addData([chartData.balance], chartData.gamesCount % 50 === 0 ? chartData.gamesCount : '');
 
-            if (chart.datasets[0].points.length === 200) {
+            if (chart.datasets[0].points.length === 100) {
                 chart.removeData();
             }
         });

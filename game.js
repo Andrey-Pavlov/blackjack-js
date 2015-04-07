@@ -74,7 +74,7 @@ function Game(bet) {
         dealerCards.push(dc1);
 
         dc2 = dealerGetCard();
-        
+
         playerHands.push(new Player(bet));
     }());
     //
@@ -143,8 +143,11 @@ function Game(bet) {
                 else if (!dealerNatural && !playerNatural) {
                     hand.winLoseDraw = 'draw';
                 }
+                else if (dealerNatural && playerNatural) {
+                    hand.winLoseDraw = 'draw';
+                }
                 else {
-                    throw 'ex';
+                    throw new Error('Dealer == Player, but???');
                 }
             }
             else if (playerCount > dealerCount || dealerCount > 21) {
@@ -154,7 +157,7 @@ function Game(bet) {
                 hand.winLoseDraw = 'lose';
             }
             else {
-                throw 'ex';
+                throw new Error('Dealer !== Player, but???');
             }
         });
 
@@ -173,8 +176,8 @@ function Game(bet) {
     // };
 
     function Player(bet, newSplitCard) {
-        var _thisPlayer = this,
-            hand = new Hand();
+        var _thisPlayer = this;
+            var hand = new Hand();
 
         _thisPlayer.bet = bet;
 
@@ -188,28 +191,29 @@ function Game(bet) {
 
         _thisPlayer.playerCards = [];
 
+        _thisPlayer.firstProbs = null;
 
         //initHand
         (function() {
             var card1 = newSplitCard || theDeck.getRandomCard();
             _thisPlayer.playerCards.push(card1);
-            hand.hit(card1);
-            theDeck.remove(card1);
+           //hand.hit(card1);
+            //theDeck.remove(card1);
 
             var card2 = theDeck.getRandomCard();
             _thisPlayer.playerCards.push(card2);
-            hand.hit(card2);
-            theDeck.remove(card2);
+            //hand.hit(card2);
+            //theDeck.remove(card2);
 
-            if (!!newSplitCard) {
+            //if (!!newSplitCard) {
                 hand.reset(card1, card2, theDeck);
-            }
+            //}
         }());
 
         _thisPlayer.getCard = getCard;
 
         _thisPlayer.isNatural = function() {
-            return hand.isNatural;
+            return hand.isNatural();
         };
 
         function getCard() {
@@ -263,8 +267,6 @@ function Game(bet) {
             //     return stand;
             // }
             _thisPlayer.isEnded = true;
-
-            _thisPlayer.bet *= 2;
 
             return hit;
         };
@@ -320,7 +322,7 @@ function Game(bet) {
                 ddVal = hand.doubleExval(theDeck, dealer);
             }
 
-            if (hand.getLength() === 2 && _thisPlayer.playerCards[0] === _thisPlayer.playerCards[1]) {
+            if (hand.playerCards.length === 2 && _thisPlayer.playerCards[0] === _thisPlayer.playerCards[1]) {
                 hand.unhit(_thisPlayer.playerCards[0]);
                 splitVal = hand.approxSplitPlay(theDeck, dealer, resplitting && _thisPlayer.playerCards[0] != 1);
                 hand.hit(_thisPlayer.playerCards[0]);
@@ -374,6 +376,9 @@ function Game(bet) {
             theDeck.remove(dc2);
             dealerHand.hit(dc2);
             //
+            if (!utils.notNullOrUndefined(_thisPlayer.firstProbs)) {
+                _thisPlayer.firstProbs = strategyCalcs;
+            }
 
             return strategyCalcs;
 

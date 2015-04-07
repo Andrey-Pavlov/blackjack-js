@@ -53,6 +53,8 @@ io.on('connection', function(socket) {
     });
 
     socket.on('error', function(err) {
+        console.log(err);
+        console.log(err.stack);
         console.error(err.stack); // TODO, cleanup 
     });
 
@@ -65,6 +67,8 @@ io.on('connection', function(socket) {
                     var dd = hand.doubleDown();
                     var bet = hand.bet;
                     balance -= bet;
+                    
+                    hand.bet = hand.bet * 2;
 
                     socket.emit('betBalanceChanged', {
                         balance: balance,
@@ -127,7 +131,7 @@ io.on('connection', function(socket) {
                     socket.emit('restart');
                     break;
                 default:
-                    throw 'ex';
+                   throw new Error('Action missed?');
             }
 
             if (hand.winLoseDraw !== null && hand.winLoseDraw !== undefined) {
@@ -194,7 +198,6 @@ io.on('connection', function(socket) {
         }
     });
 
-
     function Log() {
         var _this = this;
 
@@ -215,7 +218,6 @@ io.on('connection', function(socket) {
             });
         };
     }
-
 
     //Bot
     socket.on('getBotCommand', function() {
